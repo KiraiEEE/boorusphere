@@ -50,7 +50,7 @@ void main() {
           limit: 5,
           searchRating: server.nsfw ? BooruRating.all : BooruRating.safe,
         ),
-        page: server.searchUrl.contains('pid=') ? 0 : 1,
+        page: 0,
       );
       final res = await dio.get(url);
       if (res.statusCode == 401 ||

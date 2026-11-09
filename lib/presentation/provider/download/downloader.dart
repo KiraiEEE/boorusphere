@@ -12,7 +12,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'downloader.g.dart';
 
-@riverpod
+// kept alive: downloads outlive the dialog that started them
+@Riverpod(keepAlive: true)
 Downloader downloader(Ref ref) {
   return Downloader(ref);
 }

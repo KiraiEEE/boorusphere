@@ -80,7 +80,11 @@ abstract class Server with _$Server {
 
     final url = '$apiAddress/$searchUrl'
         .replaceAll('{tags}', tags)
-        .replaceAll('{page-id}', '$page')
+        // [page] is 0-based; only gelbooru's "pid" is, page numbers start at 1
+        .replaceAll(
+          '{page-id}',
+          '${searchUrl.contains('pid={page-id}') ? page : page + 1}',
+        )
         .replaceAll('{post-offset}', (page * option.limit).toString())
         .replaceAll('{post-limit}', '${option.limit}');
     return withAuth(url);
