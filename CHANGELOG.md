@@ -1,3 +1,21 @@
+## 2.0.0
+
+* Windows support, alongside Android
+* NSFW switch with 18+ confirmation; safe mode is enforced server-side and on the device, adult-only servers are hidden while it's off
+* Smarter blacklist: wildcards (tag*), combos (tag1 tag2), exclusions (-tag), rating:/score: rules, per-server scope, undo
+* Searching more tags than a server allows now works, extra tags are filtered on the device
+* API key support for servers that require it (Gelbooru, Rule34)
+* New servers: Sakugabooru, AIBooru, e621/e926, Derpibooru, Furbooru, TBIB, Konachan.com, Rule34, Xbooru, Hypnohub
+* Redesigned post details with color-coded tags, long-press actions and a selection bar
+* Frosted glass UI with cheaper grouped blur, refreshed Material 3 theme and transitions
+* Predictive back and per-app language on Android 13+
+* Fix Danbooru/Gelbooru safe mode showing sensitive posts and general posts marked as questionable
+* Fix tag suggestions failing for words starting with a-f or 0-9
+* Fix Derpibooru and Furbooru searches with multiple tags
+* Fix custom API address being ignored
+* Requires Android 10 or newer
+* Update Flutter to 3.44 and all dependencies
+
 ## 1.4.5
 
 * Fix backstack exit got blocked by the double back-tap prompt

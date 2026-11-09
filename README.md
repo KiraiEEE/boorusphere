@@ -1,48 +1,50 @@
-# This repository has been archived
-Boorusphere was supposed to be a simple booru viewer, but due to lack of interest, especially in flutter, it was shut down on July 19, 2024. It remains here for history's sake, although it serves no inherent purpose.
-
-<br/><br/>
 <div align="center">
     <div><img src="assets/icons/exported/legacy-circle.png" alt="boorusphere icon" height="92"></div>
     <div><h1 align="center">Boorusphere</h1></div>
-    <div>Simple, content-focused booru viewer for Android</div>
+    <div>Simple, content-focused booru viewer for Android and Windows</div>
     <br/>
     <div>
-        <a href="https://github.com/nullxception/boorusphere/stargazers">
-            <img alt="Stargazers" src="https://img.shields.io/github/stars/nullxception/boorusphere?style=for-the-badge&logo=apachespark&logoColor=ebebf0&color=ff89b5&labelColor=23232F"/>
+        <a href="https://github.com/KiraiEEE/boorusphere/releases/latest">
+            <img alt="Latest release" src="https://img.shields.io/github/v/release/KiraiEEE/boorusphere?style=for-the-badge&logo=pkgsrc&logoColor=ebebf0&labelColor=23232F&color=95b6ff">
         </a>
-        <a href="https://github.com/nullxception/boorusphere/releases/latest">
-            <img alt="Latest release" src="https://img.shields.io/github/v/release/nullxception/boorusphere?style=for-the-badge&logo=pkgsrc&logoColor=ebebf0&labelColor=23232F&color=95b6ff">
+        <a href="https://github.com/KiraiEEE/boorusphere/actions">
+            <img alt="Workflow status" src="https://img.shields.io/github/actions/workflow/status/KiraiEEE/boorusphere/ci.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=CI">
         </a>
-        <a href="https://github.com/nullxception/boorusphere/actions">
-            <img alt="Workflow status" src="https://img.shields.io/github/actions/workflow/status/nullxception/boorusphere/ci.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=CI">
-        </a>
-        <a href="https://github.com/nullxception/boorusphere/blob/main/LICENSE.md">
-            <img alt="License" src="https://img.shields.io/github/license/nullxception/boorusphere?style=for-the-badge&logo=gitbook&logoColor=ebebf0&color=b0a8f7&labelColor=23232F"/>
-        </a>
-    </div>
-    <br/>
-    <div>
-        <a href="https://github.com/nullxception/boorusphere/releases">
-            <img src="assets/button-GHReleases.png" alt="GitHub release" width="160">
-        </a>
-        <a href="https://apt.izzysoft.de/fdroid/index/apk/io.chaldeaprjkt.boorusphere">
-            <img src="assets/button-IzzyOnDroid.png" alt="IzzyOnDroid release" width="160">
+        <a href="https://github.com/KiraiEEE/boorusphere/blob/main/LICENSE.md">
+            <img alt="License" src="https://img.shields.io/github/license/KiraiEEE/boorusphere?style=for-the-badge&logo=gitbook&logoColor=ebebf0&color=b0a8f7&labelColor=23232F"/>
         </a>
     </div>
 </div>
 
+> This is a maintained continuation of [nullxception/boorusphere](https://github.com/nullxception/boorusphere), which was archived in July 2024.
+
 # Features
 
-- Simple and intuitive UI
-- Support various booru-based imageboards
-- Support playing videos and animated images (GIF, WEBM)
-- Save favorites content
-- Search with tag suggestion
-- Download images and videos
-- Block tags from search result
-- Backup and restore data
-- and many more ...
+- Clean Material 3 interface with frosted glass surfaces
+- Android (10+) and Windows
+- Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites
+- Plays videos and animated images (GIF, WEBM, MP4)
+- One-tap NSFW switch; safe mode filters on the server and on the device
+- Blacklist with wildcards, tag combos, exclusions and rating/score rules
+- Tag suggestions, search history and favorites
+- Downloads with original or sample quality
+- API key support for servers that require an account
+- Backup and restore
+
+## Bundled servers
+
+| Server | Engine | Notes |
+| --- | --- | --- |
+| Safebooru, TBIB | Gelbooru 0.2 | |
+| Danbooru, AIBooru | Danbooru | Anonymous users can search up to 2 tags (4 on AIBooru); extra tags are filtered on the device |
+| Gelbooru | Gelbooru 0.2.5 | Requires a user ID and API key (account settings on gelbooru.com) |
+| Konachan, Yande.re, Sakugabooru | Moebooru | |
+| e926 | e621 | |
+| Derpibooru, Furbooru | Booru-on-Rails | |
+| Konachan.com, e621, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
+| Rule34 | Gelbooru 0.2 | Adult only, requires a user ID and API key |
+
+Any other compatible site can be added from **Servers > Add new server**; the app detects its API automatically.
 
 # Preview
 
@@ -53,89 +55,61 @@ Boorusphere was supposed to be a simple booru viewer, but due to lack of interes
     <img width="24%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" />
 </p>
 
-# Building from Source
+# Blacklist syntax
 
-- Install Flutter SDK, visit [flutter.dev](https://flutter.dev/) for more information.
+Each line (or comma separated entry) is one rule. A post is hidden when it matches every term of any rule.
 
-- Fetch latest source code
+| Rule | Hides |
+| --- | --- |
+| `gore` | posts tagged `gore` |
+| `futa*` | posts with any tag starting with `futa` |
+| `animated sound` | posts tagged both `animated` and `sound` |
+| `animated -sound` | animated posts without sound |
+| `rating:e` | explicit posts (`s`, `q`, `e`, `sensitive`) |
+| `score:<0` | posts with a negative score (`<`, `<=`, `>`, `>=`) |
+
+Rules can apply to every server or to a single one.
+
+# Building from source
+
+Requires the [Flutter SDK](https://flutter.dev/) 3.44 or newer. Android builds need Android SDK platform 37; Windows builds need Visual Studio 2022 with the "Desktop development with C++" workload.
 
 ```bash
-git clone https://github.com/nullxception/boorusphere.git
+git clone https://github.com/KiraiEEE/boorusphere.git
 cd boorusphere
-```
-
-- Sync dependencies
-
-```bash
 flutter pub get
-```
-
-- Run code generator
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-- Generate translation
-
-```bash
-dart run slang
-```
-
-- Run the app with your favorite IDE/PDE. or from shell:
-
-```bash
+dart run slang                 # generate translations
+dart run build_runner build    # generate code (freezed, riverpod, hive, routes)
 flutter run
 ```
 
-### Protip:
+Release builds:
 
-- Run [build_runner](https://pub.dev/packages/build_runner) after editing some areas that needs a code generator such as entities and routing.
-- Run [slang](https://pub.dev/packages/slang) after editing translation files (\*.i18n.json).
-- [build_runner](https://pub.dev/packages/build_runner) and [slang](https://pub.dev/packages/slang) has some features that will be helpful during development such as auto-rebuild and translation analysis, so it's highly recommended to check the documentations and familiarize yourself with it.
+```bash
+flutter build apk --release --split-per-abi
+flutter build windows --release
+```
+
+### Tests
+
+```bash
+flutter test                        # unit tests
+LIVE=1 flutter test test/live       # check every bundled server against the real APIs
+```
+
+### Tips
+
+- Re-run `build_runner` after editing entities, providers or routes.
+- Re-run `slang` after editing translation files (`i18n/*.i18n.json`).
 
 # Translation
 
-### Translating untranslated strings
+English (`i18n/en.i18n.json`) is the base language; untranslated strings fall back to it.
 
-- Run slang analyzer to check for missing translations
+- Find missing strings: `dart run slang analyze --outdir=i18n`, then translate them in `i18n/_missing_translations.json`
+- Apply them: `dart run slang apply --outdir=i18n`
+- New language: copy `i18n/en.i18n.json` to `i18n/<language-code>.i18n.json` and run `dart run slang`
 
-```bash
-dart run slang analyze --outdir=i18n
-```
+# License
 
-- Open [i18n/\_missing_translations.json](i18n/_missing_translations.json) and then translate your language of choice.
-
-- After editing the file, you can apply it to the actual json translation file by running:
-
-```bash
-dart run slang apply --outdir=i18n
-
-dart run slang analyze --outdir=i18n # update analyzation result files
-```
-
-### Note
-
-You can leave untranslated strings on [i18n/\_missing_translations.json](i18n/_missing_translations.json).<br/>
-It's perfectly fine and recommended to leave it unchanged rather than adding it on the actual translation json but leaving it untranslated.
-
-### Adding a new language
-
-You can copy [i18n/strings_en.i18n.json](i18n/strings_en.i18n.json) to `i18n/strings_<language-code>.i18n.json`.<br/>
-At this point, feel free to pull request your new language here and we'll take care of adapting to the app code.
-
-Or if you want to build and test yourself, then:
-
-- Run slang to generate the strings.g.dart
-
-```bash
-dart run slang
-```
-
-- Run slang analyzer to check for missing translations
-
-```bash
-dart run slang analyze --outdir=i18n
-```
-
-- Build and run the app as usual
+[BSD-3-Clause](LICENSE.md)

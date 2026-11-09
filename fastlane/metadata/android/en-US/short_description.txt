@@ -1,1 +1,1 @@
-Simple, content-focused booru viewer for Android
+Simple, content-focused booru viewer for Android and Windows

@@ -19,6 +19,15 @@
       "all": "All",
       "disable_rating_safe": "Disable rating:safe"
     },
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
     "action_tag": {
       "search": "Search tag"
     },
@@ -37,7 +46,27 @@
       "clear_all_warning": "Are you sure you want to clear all the download record ?"
     },
     "tags_blocker": {
-      "title": "Tags Blocker"
+      "title": "Tags Blocker",
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
     },
     "servers": {
       "title": "Server",
@@ -50,7 +79,13 @@
       "parser_type": {
         "search": "Search Parser",
         "suggestion": "Tag Suggestion Parser"
-      }
+      },
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
     },
     "settings": {
       "title": "Settings",
@@ -66,7 +101,8 @@
       },
       "ime_incognito": {
         "title": "Incognito Keyboard"
-      }
+      },
+      "content": "Content"
     },
     "data_backup": {
       "title": "Backup and Restore",
@@ -85,14 +121,20 @@
         "warning": "Warning! this action will overwrite any existing data.\nAre you sure you want to continue ?",
         "loading": "Restoring data..."
       }
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
     }
   },
-  "id-ID": {
-    "servers": {
-      "id": "ID"
-    }
-  },
-  "ja-JP": {},
   "ru": {
     "score": "Score",
     "always_ask": "Always ask",
@@ -101,6 +143,15 @@
       "sensitive": "Sensitive",
       "all": "All",
       "disable_rating_safe": "Disable rating:safe"
+    },
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
     },
     "changelog": {
       "whats_new": "What's new in ${version}"
@@ -111,6 +162,28 @@
       "clear_all": "Clear all",
       "clear_all_warning": "Are you sure you want to clear all the download record ?"
     },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
     "servers": {
       "invalid_search_query": "Invalid search query",
       "incompatible": "Cannot find compatible parser for ${addr}",
@@ -118,18 +191,326 @@
       "parser_type": {
         "search": "Search Parser",
         "suggestion": "Tag Suggestion Parser"
-      }
+      },
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
     },
     "settings": {
       "blur_timeline_only": {
         "title": "Only blur content on timeline",
         "desc": "Explicit-rated content will not be blurred on view-mode"
-      }
+      },
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
     }
   },
-  "th-TH": {},
+  "uk": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
+  "uwu": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
+  "id-ID": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "id": "ID",
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
+  "ja-JP": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
+  "th-TH": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
   "tr-TR": {
     "action_continue": "Continue",
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
     "changelog": {
       "whats_new": "What's new in ${version}"
     },
@@ -137,17 +518,168 @@
       "clear_all": "Clear all",
       "clear_all_warning": "Are you sure you want to clear all the download record ?"
     },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
     "servers": {
       "incompatible": "Cannot find compatible parser for ${addr}",
       "id": "ID",
       "parser_type": {
         "search": "Search Parser",
         "suggestion": "Tag Suggestion Parser"
-      }
+      },
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
     }
   },
-  "uk": {},
-  "uwu": {},
-  "zh-Hans": {},
-  "zh-TW": {}
+  "zh-Hans": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  },
+  "zh-TW": {
+    "page_status": {
+      "auth_required": "${server_name} requires an API key",
+      "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+      "add_api_key": "Add API key",
+      "hidden": {
+        "one": "${n} post hidden by your filters",
+        "other": "${n} posts hidden by your filters"
+      }
+    },
+    "tags_blocker": {
+      "syntax_title": "Rule syntax",
+      "syntax": {
+        "tag": "Exact tag",
+        "wildcard": "Any tag starting with \"tag\"",
+        "combo": "Posts that have both tags",
+        "exclude": "Unless the post has this tag",
+        "rating": "By rating (s, q, e, sensitive)",
+        "score": "By score (<, <=, >, >=)"
+      },
+      "scope_all": "All servers",
+      "scope_server": "Only ${server_name}",
+      "search": "Search rules",
+      "removed": "Removed \"${rule}\"",
+      "undo": "Undo",
+      "count": {
+        "one": "${n} rule",
+        "other": "${n} rules"
+      },
+      "add": "Block",
+      "preview": "Will add"
+    },
+    "servers": {
+      "credentials": "API credentials",
+      "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+      "login": "User ID or username",
+      "api_key": "API key",
+      "nsfw_flag": "Adult-only server",
+      "nsfw_flag_desc": "Hidden while NSFW content is off"
+    },
+    "settings": {
+      "content": "Content"
+    },
+    "nsfw": {
+      "title": "NSFW content",
+      "on": "Showing every rating",
+      "off": "Safe mode, only safe posts",
+      "confirm_title": "Show NSFW content?",
+      "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+      "confirm": "I'm 18 or older",
+      "server_hidden": "${server_name} hosts adult content",
+      "server_hidden_desc": "Turn on NSFW content to browse this server.",
+      "enable": "Turn on NSFW",
+      "badge": "18+"
+    }
+  }
 }

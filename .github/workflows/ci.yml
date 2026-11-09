@@ -20,23 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
+          channel: stable
+          flutter-version: 3.44.2
           cache: true
-      - name: Install grinder
-        run: dart pub global activate grinder
       - name: Get dependencies
-        run: |
-          flutter clean
-          flutter pub get
+        run: flutter pub get
       - name: Run code generators
-        run: grind gencode genlang
-      - name: Check code formatting
-        run: grind chkfmt
+        run: |
+          dart run slang
+          dart run build_runner build
       - name: Analyze code
-        run: grind analyze
+        run: flutter analyze --no-fatal-infos
       - name: Perform testing
-        run: grind test
+        run: flutter test

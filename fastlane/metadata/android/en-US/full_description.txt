@@ -7,6 +7,7 @@ Boorusphere is a <a href="https://en.wikipedia.org/wiki/Imageboard#Danbooru-styl
 * Save favorites content
 * Search with tag suggestion
 * Download images and videos
-* Block tags from search result
+* One-tap NSFW switch with safe mode
+* Blacklist with wildcards, tag combos and exclusions
 * Backup and restore data
 * and many more ...
