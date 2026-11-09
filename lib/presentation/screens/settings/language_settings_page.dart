@@ -28,10 +28,9 @@ class _Content extends ConsumerWidget {
 
     updateLocale(AppLocale? locale) async {
       await ref.read(uiSettingStateProvider.notifier).setLocale(locale);
-      Future.delayed(
-        const Duration(milliseconds: 120),
-        () => context.router.maybePop(),
-      );
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (context.mounted) context.router.maybePop();
+      });
     }
 
     return ListView(

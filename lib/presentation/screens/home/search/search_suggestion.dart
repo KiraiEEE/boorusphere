@@ -186,7 +186,7 @@ class _Suggestion extends HookConsumerWidget {
     useEffect(() {
       Future(() {
         if (searchBar.isOpen && suggestion is! LoadingFetchResult) {
-          ref.watch(suggestionStateProvider.notifier).get(searchBar.value);
+          ref.read(suggestionStateProvider.notifier).get(searchBar.value);
         }
       });
     }, [searchBar.isOpen]);

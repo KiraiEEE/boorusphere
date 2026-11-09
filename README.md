@@ -25,6 +25,8 @@
 - Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites
 - Plays videos and animated images (GIF, WEBM, MP4)
 - One-tap NSFW switch; safe mode filters on the server and on the device
+- Hide AI-generated content with one switch
+- Latest / Popular / Random sorting
 - Blacklist with wildcards, tag combos, exclusions and rating/score rules
 - Tag suggestions, search history and favorites
 - Downloads with original or sample quality
@@ -38,6 +40,7 @@
 | Safebooru, TBIB | Gelbooru 0.2 | |
 | Danbooru, AIBooru | Danbooru | Anonymous users can search up to 2 tags (4 on AIBooru); extra tags are filtered on the device |
 | Konachan, Yande.re, Sakugabooru | Moebooru | |
+| Wallhaven | Wallhaven | High resolution wallpapers |
 | e926 | e621 | |
 | Derpibooru, Furbooru | Booru-on-Rails | |
 | Konachan.com, e621, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
@@ -69,7 +70,7 @@ class DownloaderDialog extends ConsumerWidget {
                           .read(downloaderProvider)
                           .download(post, url: post.sampleFile);
                     }
-                    context.navigator.pop();
+                    if (context.mounted) context.navigator.pop();
                   });
                 },
               ),
@@ -85,7 +86,7 @@ class DownloaderDialog extends ConsumerWidget {
                     onItemClick?.call('original');
                     ref.read(downloaderProvider).download(post);
                   }
-                  context.navigator.pop();
+                  if (context.mounted) context.navigator.pop();
                 });
               },
             ),
@@ -129,6 +130,8 @@ class DownloaderDialog extends ConsumerWidget {
 }
 
 Future<bool> checkNotificationPermission(BuildContext context) async {
+  // download notifications only need a runtime permission on Android 13+
+  if (!Platform.isAndroid) return true;
   final isGranted = await Permission.notification.isGranted;
   if (isGranted) {
     return true;

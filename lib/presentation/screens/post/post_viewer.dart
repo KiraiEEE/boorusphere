@@ -16,6 +16,7 @@ import 'package:boorusphere/presentation/widgets/styled_overlay_region.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,7 +59,8 @@ class PostViewer extends HookConsumerWidget {
 
     final post = posts.isEmpty
         ? Post.empty
-        : posts.elementAt(currentPage.value);
+        // filters can shrink the list while viewing
+        : posts.elementAt(currentPage.value.clamp(0, posts.length - 1));
     final showAppbar = useState(true);
     final isLoadingMore = useState(false);
     final loadMore = timelineController.onLoadMore;
@@ -77,98 +79,124 @@ class PostViewer extends HookConsumerWidget {
       return WakelockPlus.disable;
     }, []);
 
+    void turnPage(int delta) {
+      final target = currentPage.value + delta;
+      if (target < 0 || target >= posts.length) return;
+      pageController.animateToPage(
+        target,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) async {
-        ref.watch(fullscreenStateProvider.notifier).reset();
+      onPopInvokedWithResult: (didPop, _) async {
+        ref.read(fullscreenStateProvider.notifier).reset();
         context.scaffoldMessenger.removeCurrentSnackBar();
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: StyledOverlayRegion(
-          nightMode: true,
-          child: Stack(
-            children: [
-              ExtendedImageGesturePageView.builder(
-                controller: pageController,
-                onPageChanged: (index) async {
-                  SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                    if (context.mounted) {
-                      currentPage.value = index;
-                    }
-                  });
-                  timelineController.scrollTo(index);
-                  context.scaffoldMessenger.hideCurrentSnackBar();
-                  if (loadMore == null) return;
+      // keyboard navigation for desktop
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+              turnPage(1),
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+              turnPage(-1),
+          const SingleActivator(LogicalKeyboardKey.escape): () =>
+              context.navigator.maybePop(),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            backgroundColor: Colors.black,
+            body: StyledOverlayRegion(
+              nightMode: true,
+              child: Stack(
+                children: [
+                  ExtendedImageGesturePageView.builder(
+                    controller: pageController,
+                    onPageChanged: (index) async {
+                      SchedulerBinding.instance.addPostFrameCallback((
+                        timeStamp,
+                      ) {
+                        if (context.mounted) {
+                          currentPage.value = index;
+                        }
+                      });
+                      timelineController.scrollTo(index);
+                      context.scaffoldMessenger.hideCurrentSnackBar();
+                      if (loadMore == null) return;
 
-                  final offset = index + 1;
-                  final threshold =
-                      posts.length / 100 * (100 - loadMoreThreshold);
-                  if (offset + threshold > posts.length - 1) {
-                    isLoadingMore.value = true;
-                    await loadMore();
-                    await Future.delayed(kThemeAnimationDuration, () {
-                      if (context.mounted) {
-                        isLoadingMore.value = false;
+                      final offset = index + 1;
+                      final threshold =
+                          posts.length / 100 * (100 - loadMoreThreshold);
+                      if (offset + threshold > posts.length - 1) {
+                        isLoadingMore.value = true;
+                        await loadMore();
+                        await Future.delayed(kThemeAnimationDuration, () {
+                          if (context.mounted) {
+                            isLoadingMore.value = false;
+                          }
+                        });
                       }
-                    });
-                  }
-                },
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  precachePosts(index, loadOriginal);
+                    },
+                    itemCount: posts.length,
+                    itemBuilder: (context, index) {
+                      precachePosts(index, loadOriginal);
 
-                  final post = posts.elementAt(index);
-                  final Widget widget;
-                  switch (post.content.type) {
-                    case PostType.photo:
-                      widget = PostImage(post: post);
-                      break;
-                    case PostType.video:
-                      widget = PostVideo(
-                        post: post,
-                        onToolboxVisibilityChange: (visible) {
-                          showAppbar.value = visible;
-                        },
+                      final post = posts.elementAt(index);
+                      final Widget widget;
+                      switch (post.content.type) {
+                        case PostType.photo:
+                          widget = PostImage(post: post);
+                          break;
+                        case PostType.video:
+                          widget = PostVideo(
+                            post: post,
+                            onToolboxVisibilityChange: (visible) {
+                              showAppbar.value = visible;
+                            },
+                          );
+                          break;
+                        default:
+                          widget = PostUnknown(post: post);
+                          break;
+                      }
+                      return HeroMode(
+                        enabled: index == currentPage.value,
+                        child: ClipRect(child: widget),
                       );
-                      break;
-                    default:
-                      widget = PostUnknown(post: post);
-                      break;
-                  }
-                  return HeroMode(
-                    enabled: index == currentPage.value,
-                    child: ClipRect(child: widget),
-                  );
-                },
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SlideFadeVisibility(
-                  direction: HidingDirection.toTop,
-                  visible: showAppbar.value,
-                  child: _PostAppBar(
-                    subtitle: post.describeTags,
-                    title: isLoadingMore.value
-                        ? '#${currentPage.value + 1} of (loading...)'
-                        : '#${currentPage.value + 1} of ${posts.length}',
+                    },
                   ),
-                ),
-              ),
-              if (!post.content.isVideo)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: SlideFadeVisibility(
-                    direction: HidingDirection.toBottom,
-                    visible: !fullscreen,
-                    child: PostToolbox(post),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SlideFadeVisibility(
+                      direction: HidingDirection.toTop,
+                      visible: showAppbar.value,
+                      child: _PostAppBar(
+                        subtitle: post.describeTags,
+                        title: isLoadingMore.value
+                            ? '#${currentPage.value + 1} of (loading...)'
+                            : '#${currentPage.value + 1} of ${posts.length}',
+                      ),
+                    ),
                   ),
-                ),
-            ],
+                  if (!post.content.isVideo)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: SlideFadeVisibility(
+                        direction: HidingDirection.toBottom,
+                        visible: !fullscreen,
+                        child: PostToolbox(post),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

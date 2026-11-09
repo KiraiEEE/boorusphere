@@ -1,6 +1,10 @@
 ## 2.0.0
 
-* Windows support, alongside Android
+* Windows support, alongside Android (keyboard navigation in the viewer)
+* Wallhaven for high resolution wallpapers
+* Latest / Popular / Random sorting
+* Switch to hide AI-generated content
+* Servers listed from best to worst
 * NSFW switch with 18+ confirmation; safe mode is enforced server-side and on the device, adult-only servers are hidden while it's off
 * Smarter blacklist: wildcards (tag*), combos (tag1 tag2), exclusions (-tag), rating:/score: rules, per-server scope, undo
 * Searching more tags than a server allows now works, extra tags are filtered on the device
@@ -14,6 +18,7 @@
 * Fix tag suggestions failing for words starting with a-f or 0-9
 * Fix Derpibooru and Furbooru searches with multiple tags
 * Fix custom API address being ignored
+* Fix e621 returning nothing and Danbooru-style servers loading the first page twice
 * Requires Android 10 or newer
 * Update Flutter to 3.44 and all dependencies
 
