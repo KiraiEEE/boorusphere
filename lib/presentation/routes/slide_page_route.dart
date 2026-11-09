@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 enum SlidePageType { open, close, both }
@@ -34,11 +36,21 @@ class SlidePageRoute<T> extends PageRoute<T> {
   @override
   final bool opaque;
 
-  @override
-  Duration get transitionDuration => duration;
+  /// Regular pages on Android use the system's Android 16 transition with
+  /// predictive back, so the back gesture previews the previous page.
+  bool get _useSystemTransition =>
+      Platform.isAndroid && type == SlidePageType.both && opaque;
+
+  static const _systemTransition = PredictiveBackPageTransitionsBuilder();
 
   @override
-  Duration get reverseTransitionDuration => reverseDuration;
+  Duration get transitionDuration =>
+      _useSystemTransition ? _systemTransition.transitionDuration : duration;
+
+  @override
+  Duration get reverseTransitionDuration => _useSystemTransition
+      ? _systemTransition.reverseTransitionDuration
+      : reverseDuration;
 
   static final _slideIn = Tween(begin: const Offset(0.08, 0), end: Offset.zero);
   static final _slideOut =
@@ -51,6 +63,11 @@ class SlidePageRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    if (_useSystemTransition) {
+      return _systemTransition.buildTransitions(
+          this, context, animation, secondaryAnimation, child);
+    }
+
     // Material 3 "emphasized" motion: quick start, long gentle settle
     final next = CurvedAnimation(
       parent: animation,

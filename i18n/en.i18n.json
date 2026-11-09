@@ -64,7 +64,14 @@
       "zero": "No result found for ${query}",
       "other": "No more result for ${query}"
     },
-    "blocked": "'${query}' is blocked by Tags Blocker"
+    "blocked": "'${query}' is blocked by Tags Blocker",
+    "auth_required": "${server_name} requires an API key",
+    "auth_required_desc": "Add your user ID and API key in the server settings to browse it.",
+    "add_api_key": "Add API key",
+    "hidden": {
+      "one": "${n} post hidden by your filters",
+      "other": "${n} posts hidden by your filters"
+    }
   },
   "suggestion": {
     "not_supported": "${server_name} did not support search suggestion",
@@ -138,9 +145,29 @@
   },
   "tags_blocker": {
     "title": "Tags Blocker",
-    "desc": "You can block multiple tags by separating it with space",
-    "empty": "No blocked tags yet",
-    "hint": "Example: red_shirt blue_shoes"
+    "desc": "Posts matching any rule are hidden. Put each rule on its own line or separate them with commas.",
+    "empty": "Nothing blocked yet",
+    "hint": "e.g. gore, animated -sound, rating:e",
+    "syntax_title": "Rule syntax",
+    "syntax": {
+      "tag": "Exact tag",
+      "wildcard": "Any tag starting with \"tag\"",
+      "combo": "Posts that have both tags",
+      "exclude": "Unless the post has this tag",
+      "rating": "By rating (s, q, e, sensitive)",
+      "score": "By score (<, <=, >, >=)"
+    },
+    "scope_all": "All servers",
+    "scope_server": "Only ${server_name}",
+    "search": "Search rules",
+    "removed": "Removed \"${rule}\"",
+    "undo": "Undo",
+    "count": {
+      "one": "${n} rule",
+      "other": "${n} rules"
+    },
+    "add": "Block",
+    "preview": "Will add"
   },
   "servers": {
     "title": "Server",
@@ -165,7 +192,13 @@
     "parser_type": {
       "search": "Search Parser",
       "suggestion": "Tag Suggestion Parser"
-    }
+    },
+    "credentials": "API credentials",
+    "credentials_desc": "Some servers (Gelbooru, Rule34) only answer registered users. You can find both values in your account settings on the site.",
+    "login": "User ID or username",
+    "api_key": "API key",
+    "nsfw_flag": "Adult-only server",
+    "nsfw_flag_desc": "Hidden while NSFW content is off"
   },
   "server_query": {
     "title": "Query",
@@ -218,7 +251,8 @@
       "title": "Clear cache",
       "desc": "Clear loaded content from cache",
       "done": "Cache cleared"
-    }
+    },
+    "content": "Content"
   },
   "data_backup": {
     "title": "Backup and Restore",
@@ -237,5 +271,17 @@
       "warning": "Warning! this action will overwrite any existing data.\nAre you sure you want to continue ?",
       "loading": "Restoring data..."
     }
+  },
+  "nsfw": {
+    "title": "NSFW content",
+    "on": "Showing every rating",
+    "off": "Safe mode, only safe posts",
+    "confirm_title": "Show NSFW content?",
+    "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
+    "confirm": "I'm 18 or older",
+    "server_hidden": "${server_name} hosts adult content",
+    "server_hidden_desc": "Turn on NSFW content to browse this server.",
+    "enable": "Turn on NSFW",
+    "badge": "18+"
   }
 }

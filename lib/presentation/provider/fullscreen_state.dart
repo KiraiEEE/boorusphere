@@ -1,4 +1,3 @@
-import 'package:boorusphere/domain/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -32,16 +31,7 @@ class FullscreenState extends _$FullscreenState {
   }
 
   Future<void> unfullscreen() async {
-    final envRepo = ref.read(envRepoProvider);
-    if (envRepo.sdkVersion < 29) {
-      // SDK 28 and below ignores edgeToEdge, so we have to manually reenable them
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
-        SystemUiOverlay.top,
-        SystemUiOverlay.bottom,
-      ]);
-    } else {
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
   void reset() {

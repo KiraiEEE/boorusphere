@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:boorusphere/presentation/provider/booru/entity/fetch_result.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
-import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/screens/home/home_status.dart';
 import 'package:boorusphere/presentation/screens/home/search/search_screen.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
-import 'package:boorusphere/presentation/utils/extensions/post.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:flutter/material.dart';
@@ -22,24 +20,20 @@ class HomeContent extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pageState = ref.watch(pageStateProvider);
     final session = ref.watch(searchSessionProvider);
-    final servers = ref.watch(serverStateProvider);
-    final blockedTags = ref.watch(tagsBlockerStateProvider.select(
-      (state) => state.values
-          .where((it) => it.serverId.isEmpty || it.serverId == session.serverId)
-          .map((it) => it.name),
-    ));
-
-    final filteredPosts = pageState.data.posts
-        .where((it) => !it.allTags.any(blockedTags.contains));
+    final hasServers =
+        ref.watch(serverStateProvider.select((it) => it.isNotEmpty));
+    // posts are already filtered by blacklist and safe mode in PageState
+    final posts = pageState.data.posts;
 
     useEffect(() {
-      if (servers.isNotEmpty) {
+      if (hasServers) {
         Future(() {
           ref.read(pageStateProvider.notifier).update(
               (option) => option.copyWith(query: session.query, clear: true));
         });
       }
-    }, [servers.isNotEmpty]);
+      return null;
+    }, [hasServers]);
 
     final timelineController = ref.watch(timelineControllerProvider);
     final scrollController = timelineController.scrollController;
@@ -47,7 +41,9 @@ class HomeContent extends HookConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients ||
           pageState is DataFetchResult ||
-          pageState is LoadingFetchResult) return;
+          pageState is LoadingFetchResult) {
+        return;
+      }
 
       if (scrollController.position.extentAfter < 300) {
         scrollController.animateTo(
@@ -79,7 +75,7 @@ class HomeContent extends HookConsumerWidget {
                   sliver: SliverPadding(
                     padding: const EdgeInsets.all(10),
                     sliver: Timeline(
-                      posts: filteredPosts,
+                      posts: posts,
                     ),
                   ),
                 ),
@@ -121,8 +117,8 @@ class _EdgeShadow extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomLeft,
                 colors: [
-                  tint.withOpacity(0.8),
-                  tint.withOpacity(0),
+                  tint.withValues(alpha: 0.8),
+                  tint.withValues(alpha: 0),
                 ],
               ),
             ),

@@ -16,7 +16,7 @@ val hasReleaseKey = keystoreProperties.containsKey("keyAlias")
 
 android {
     namespace = "io.chaldeaprjkt.boorusphere"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -30,7 +30,8 @@ android {
 
     defaultConfig {
         applicationId = "io.chaldeaprjkt.boorusphere"
-        minSdk = flutter.minSdkVersion
+        // Android 10+: gesture navigation, edge-to-edge and scoped storage baseline
+        minSdk = 29
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

@@ -4,12 +4,14 @@ import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_controller.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
+import 'package:boorusphere/presentation/widgets/nsfw_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -41,8 +43,9 @@ class HomeDrawer extends StatelessWidget {
                   child: ListTileTheme(
                     data: context.theme.listTileTheme.copyWith(
                       dense: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 24),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                      ),
                     ),
                     child: const Column(
                       children: [
@@ -52,6 +55,9 @@ class HomeDrawer extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _Header(),
+                              NsfwSwitchCard(
+                                margin: EdgeInsets.fromLTRB(16, 4, 16, 12),
+                              ),
                               _ServerSelection(),
                             ],
                           ),
@@ -130,10 +136,7 @@ class _Header extends StatelessWidget {
         children: [
           const Text(
             'Boorusphere!',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w200,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w200),
           ),
           _ThemeSwitcherButton(),
         ],
@@ -156,8 +159,9 @@ class _ThemeSwitcherButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.themeMode));
+    final theme = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.themeMode),
+    );
 
     return IconButton(
       icon: Icon(themeIconOf(theme)),
@@ -199,7 +203,8 @@ class AppVersionTile extends ConsumerWidget {
               ),
             ),
             subtitle: Text(
-                context.t.updater.progress(progress: updateProgress.progress)),
+              context.t.updater.progress(progress: updateProgress.progress),
+            ),
             onTap: () => context.router.push(const AboutRoute()),
           );
         }
@@ -233,8 +238,9 @@ class _HomeTile extends ConsumerWidget {
         onTap: () {
           ref.read(homeDrawerControllerProvider).close();
           context.router.pushAndPopUntil(
-              HomeRoute(session: session.copyWith(query: '')),
-              predicate: (r) => false);
+            HomeRoute(session: session.copyWith(query: '')),
+            predicate: (r) => false,
+          );
         },
       ),
     );
@@ -246,47 +252,65 @@ class _ServerSelection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final servers = ref.watch(serverStateProvider);
+    final allServers = ref.watch(serverStateProvider);
+    final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
     final session = ref.watch(searchSessionProvider);
-    final serverActive = servers.getById(session.serverId);
+    final serverActive = allServers.getById(session.serverId);
+    final servers = allServers.where((it) => nsfw || !it.nsfw);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: servers.map((it) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
-          child: ListTile(
-            title: Text(it.name),
-            leading: Favicon(
-              url: it.homepage,
-              shape: BoxShape.circle,
-              iconSize: 21,
-            ),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: servers.map((it) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+            child: ListTile(
+              title: Text(it.name),
+              trailing: it.nsfw
+                  ? Text(
+                      context.t.nsfw.badge,
+                      style: context.theme.textTheme.labelSmall?.copyWith(
+                        color: context.colorScheme.error,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    )
+                  : null,
+              leading: Favicon(
+                url: it.homepage,
+                shape: BoxShape.circle,
+                iconSize: 21,
               ),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              selected: it.id == serverActive.id,
+              selectedTileColor: context.colorScheme.secondaryContainer,
+              selectedColor: context.colorScheme.onSecondaryContainer,
+              onTap: () {
+                ref.read(homeDrawerControllerProvider).close().then((value) {
+                  if (!context.mounted) return;
+                  if (it.id != serverActive.id) {
+                    context.router.push(
+                      HomeRoute(session: session.copyWith(serverId: it.id)),
+                    );
+                  } else {
+                    ref
+                        .read(pageStateProvider.notifier)
+                        .update((it) => it.copyWith(clear: true));
+                  }
+                });
+              },
             ),
-            selected: it.id == serverActive.id,
-            selectedTileColor: context.colorScheme.primary
-                .withAlpha(context.isLightThemed ? 50 : 25),
-            onTap: () {
-              ref.read(homeDrawerControllerProvider).close().then((value) {
-                if (it.id != serverActive.id) {
-                  context.router.push(
-                      HomeRoute(session: session.copyWith(serverId: it.id)));
-                } else {
-                  ref
-                      .read(pageStateProvider.notifier)
-                      .update((it) => it.copyWith(clear: true));
-                }
-              });
-            },
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }

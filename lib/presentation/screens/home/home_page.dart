@@ -109,7 +109,7 @@ class _Home extends HookConsumerWidget {
       canPop: (allowPop.value || context.router.canPop()) &&
           !drawer.isOpen &&
           !searchBar.isOpen,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, _) async {
         if (drawer.isOpen || searchBar.isOpen) {
           maybePopTimer.cancel();
           context.scaffoldMessenger.hideCurrentSnackBar();
@@ -160,7 +160,11 @@ class _SlidableContainer extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final animator =
         useAnimationController(duration: const Duration(milliseconds: 300));
-    final tween = CurveTween(curve: Curves.easeInOutSine).animate(animator);
+    final tween = CurvedAnimation(
+      parent: animator,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
     final maxDrawerWidth =
         (context.mediaQuery.size.width).clamp(0.0, 410.0) - 84;
     final canBeDragged = useState(true);
@@ -234,7 +238,7 @@ class _SlidableContainer extends HookConsumerWidget {
                 transform: Matrix4.identity()
                   ..setTranslationRaw(
                       (1 - tween.value) * (maxDrawerWidth / 2), 0, 0)
-                  ..translate(slide - maxDrawerWidth),
+                  ..translateByDouble(slide - maxDrawerWidth, 0, 0, 1),
                 alignment: Alignment.centerLeft,
                 child: HomeDrawer(maxWidth: maxDrawerWidth),
               ),
@@ -245,7 +249,29 @@ class _SlidableContainer extends HookConsumerWidget {
                   onTap: animator.isCompleted ? drawer.close : null,
                   child: IgnorePointer(
                     ignoring: animator.isCompleted,
-                    child: child,
+                    // keep the tree stable so the timeline never remounts
+                    child: ClipRRect(
+                      clipBehavior:
+                          tween.value == 0 ? Clip.none : Clip.antiAlias,
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(28 * tween.value),
+                      ),
+                      child: Stack(
+                        fit: StackFit.passthrough,
+                        children: [
+                          child!,
+                          if (tween.value > 0)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: ColoredBox(
+                                  color: Colors.black
+                                      .withValues(alpha: 0.18 * tween.value),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
