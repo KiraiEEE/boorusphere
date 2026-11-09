@@ -28,7 +28,7 @@
 - Blacklist with wildcards, tag combos, exclusions and rating/score rules
 - Tag suggestions, search history and favorites
 - Downloads with original or sample quality
-- API key support for servers that require an account
+- No account needed for any bundled server; API keys can still be added for sites that require them (e.g. Gelbooru)
 - Backup and restore
 
 ## Bundled servers
@@ -37,12 +37,11 @@
 | --- | --- | --- |
 | Safebooru, TBIB | Gelbooru 0.2 | |
 | Danbooru, AIBooru | Danbooru | Anonymous users can search up to 2 tags (4 on AIBooru); extra tags are filtered on the device |
-| Gelbooru | Gelbooru 0.2.5 | Requires a user ID and API key (account settings on gelbooru.com) |
 | Konachan, Yande.re, Sakugabooru | Moebooru | |
 | e926 | e621 | |
 | Derpibooru, Furbooru | Booru-on-Rails | |
 | Konachan.com, e621, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
-| Rule34 | Gelbooru 0.2 | Adult only, requires a user ID and API key |
+| Rule34 (paheal) | Shimmie | Adult only |
 
 Any other compatible site can be added from **Servers > Add new server**; the app detects its API automatically.
 

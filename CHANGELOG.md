@@ -4,8 +4,9 @@
 * NSFW switch with 18+ confirmation; safe mode is enforced server-side and on the device, adult-only servers are hidden while it's off
 * Smarter blacklist: wildcards (tag*), combos (tag1 tag2), exclusions (-tag), rating:/score: rules, per-server scope, undo
 * Searching more tags than a server allows now works, extra tags are filtered on the device
-* API key support for servers that require it (Gelbooru, Rule34)
-* New servers: Sakugabooru, AIBooru, e621/e926, Derpibooru, Furbooru, TBIB, Konachan.com, Rule34, Xbooru, Hypnohub
+* Every bundled server works without an account; API keys can be added for sites that need them
+* New servers: Sakugabooru, AIBooru, e621/e926, Derpibooru, Furbooru, TBIB, Konachan.com, Rule34 (paheal), Xbooru, Hypnohub
+* Gelbooru removed from the presets since it now requires an account
 * Redesigned post details with color-coded tags, long-press actions and a selection bar
 * Frosted glass UI with cheaper grouped blur, refreshed Material 3 theme and transitions
 * Predictive back and per-app language on Android 13+

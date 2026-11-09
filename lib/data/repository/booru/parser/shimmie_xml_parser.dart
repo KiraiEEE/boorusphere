@@ -20,7 +20,7 @@ class ShimmieXmlParser extends BooruParser {
 
   @override
   final searchQuery =
-      'api/danbooru/find_posts/index.xml?tags={tags}&limit={post-limit}&page={page-id}';
+      'api/danbooru/find_posts?tags={tags}&limit={post-limit}&page={page-id}';
 
   @override
   final suggestionQuery = 'api/internal/autocomplete?s={tag-part}';
@@ -35,9 +35,10 @@ class ShimmieXmlParser extends BooruParser {
   bool canParsePage(Response res) {
     final data = res.data;
     final rawString = data.toString();
+    // older Shimmie uses <tag> elements, newer ones use <post>
     return data is String &&
         rawString.contains('<posts') &&
-        rawString.contains('<tag ');
+        (rawString.contains('<tag ') || rawString.contains('<post '));
   }
 
   @override
@@ -48,11 +49,13 @@ class ShimmieXmlParser extends BooruParser {
 
     final conv = jsonDecode(xjson.toGData());
 
-    if (!conv.values.first.keys.contains('tag')) {
+    final root = conv.values.first;
+    final key = root.keys.contains('post') ? 'post' : 'tag';
+    if (!root.keys.contains(key)) {
       throw BooruError.empty;
     }
 
-    final posts = conv.values.first['tag'];
+    final posts = root[key];
 
     if (posts is LinkedHashMap) {
       entries.add(posts);
@@ -117,20 +120,26 @@ class ShimmieXmlParser extends BooruParser {
 
   @override
   bool canParseSuggestion(Response res) {
-    try {
-      Map<String, int>.from(res.data);
-      return true;
-    } catch (e) {
-      return false;
-    }
+    final data = res.data;
+    return data is Map &&
+        data.values.every(
+          (it) => it is int || (it is Map && it['count'] is int),
+        );
+  }
+
+  // {"tag": 12} on older Shimmie, {"tag": {"count": 12}} on newer ones
+  static int _countOf(Object? value) {
+    if (value is int) return value;
+    if (value is Map && value['count'] is int) return value['count'];
+    return 0;
   }
 
   @override
   Set<String> parseSuggestion(Server server, Response res) {
-    Map<String, int> counted = Map.from(res.data);
-    return counted.entries
-        .where((it) => it.value > 0)
-        .map((it) => BooruUtil.decodeTag(it.key))
+    final Map data = res.data;
+    return data.entries
+        .where((it) => _countOf(it.value) > 0)
+        .map((it) => BooruUtil.decodeTag(it.key.toString()))
         .toSet();
   }
 }

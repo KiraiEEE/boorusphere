@@ -52,6 +52,10 @@ android {
         release {
             // Falls back to debug keys so `flutter build apk` works without a keystore.
             signingConfig = signingConfigs.getByName(if (hasReleaseKey) "release" else "debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
         getByName("profile") {
             if (hasReleaseKey) signingConfig = signingConfigs.getByName("release")

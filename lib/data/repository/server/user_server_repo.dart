@@ -40,6 +40,12 @@ class UserServerRepo implements ServerRepo {
       final preset = _defaults[entry.key];
       if (preset == null) continue;
       final current = entry.value;
+      // the preset moved to another site, replace it unless the user
+      // configured credentials for the old one
+      if (current.homepage != preset.homepage && !current.hasCredentials) {
+        updates[entry.key] = preset;
+        continue;
+      }
       var synced = current.copyWith(nsfw: preset.nsfw);
       if (current.searchUrl == preset.searchUrl &&
           current.searchParserId.isEmpty) {

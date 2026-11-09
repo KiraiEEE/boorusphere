@@ -238,7 +238,7 @@ void main() async {
       const host = 'https://rule34.paheal.test';
       adapter
         ..put(
-          '$host/api/danbooru/find_posts/index.xml?tags=*&limit=30&page=1',
+          '$host/api/danbooru/find_posts?tags=*&limit=30&page=1',
           FakeResponseBody.fromFixture('rule34.paheal/posts.xml', 200),
         )
         ..put(

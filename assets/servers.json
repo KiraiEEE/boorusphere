@@ -18,15 +18,6 @@
     "suggestionParserId": "Danbooru.json"
   },
   {
-    "id": "Gelbooru",
-    "homepage": "https://gelbooru.com",
-    "searchUrl": "index.php?page=dapi&s=post&q=index&tags={tags}&pid={page-id}&limit={post-limit}&json=1",
-    "tagSuggestionUrl": "index.php?page=dapi&s=tag&q=index&name_pattern=%{tag-part}%&orderby=count&limit={post-limit}&json=1",
-    "postUrl": "index.php?page=post&s=view&id={post-id}",
-    "searchParserId": "Gelbooru.json",
-    "suggestionParserId": "Gelbooru.json"
-  },
-  {
     "id": "Konachan",
     "homepage": "https://konachan.net",
     "searchUrl": "post.json?tags={tags}&page={page-id}&limit={post-limit}",
@@ -119,17 +110,6 @@
     "nsfw": true
   },
   {
-    "id": "Rule34",
-    "homepage": "https://rule34.xxx",
-    "apiAddr": "https://api.rule34.xxx",
-    "searchUrl": "index.php?page=dapi&s=post&q=index&tags={tags}&pid={page-id}&limit={post-limit}",
-    "tagSuggestionUrl": "index.php?page=dapi&s=tag&q=index&name_pattern=%{tag-part}%&orderby=count&limit={post-limit}",
-    "postUrl": "index.php?page=post&s=view&id={post-id}",
-    "searchParserId": "Safebooru.xml",
-    "suggestionParserId": "Safebooru.xml",
-    "nsfw": true
-  },
-  {
     "id": "Xbooru",
     "homepage": "https://xbooru.com",
     "searchUrl": "index.php?page=dapi&s=post&q=index&tags={tags}&pid={page-id}&limit={post-limit}",
@@ -147,6 +127,16 @@
     "postUrl": "index.php?page=post&s=view&id={post-id}",
     "searchParserId": "Safebooru.xml",
     "suggestionParserId": "Safebooru.xml",
+    "nsfw": true
+  },
+  {
+    "id": "Rule34",
+    "homepage": "https://rule34.paheal.net",
+    "searchUrl": "api/danbooru/find_posts?tags={tags}&limit={post-limit}&page={page-id}",
+    "tagSuggestionUrl": "api/internal/autocomplete?s={tag-part}",
+    "postUrl": "post/view/{post-id}",
+    "searchParserId": "Shimmie.xml",
+    "suggestionParserId": "Shimmie.xml",
     "nsfw": true
   }
 ]
