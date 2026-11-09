@@ -12,6 +12,7 @@ import 'package:boorusphere/data/repository/booru/parser/gelbooru_json_parser.da
 import 'package:boorusphere/data/repository/booru/parser/moebooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/safebooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/shimmie_xml_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/wallhaven_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:dio/dio.dart';
@@ -27,19 +28,24 @@ void main() {
     MoebooruJsonParser(),
     SafebooruXmlParser(),
     ShimmieXmlParser(),
+    WallhavenJsonParser(),
   ];
-  final dio = Dio(BaseOptions(
-    headers: {
-      'User-Agent': 'Boorusphere/2.0.0 (+https://github.com/KiraiEEE/boorusphere)',
-    },
-    connectTimeout: const Duration(seconds: 20),
-    receiveTimeout: const Duration(seconds: 20),
-    validateStatus: (_) => true,
-  ));
+  final dio = Dio(
+    BaseOptions(
+      headers: {
+        'User-Agent':
+            'Boorusphere/2.0.0 (+https://github.com/KiraiEEE/boorusphere)',
+      },
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
+      validateStatus: (_) => true,
+    ),
+  );
 
-  final servers = (jsonDecode(File('assets/servers.json').readAsStringSync())
-          as List)
-      .map((it) => Server.fromJson(it as Map<String, dynamic>));
+  final servers =
+      (jsonDecode(File('assets/servers.json').readAsStringSync()) as List).map(
+        (it) => Server.fromJson(it as Map<String, dynamic>),
+      );
 
   BooruParser parserOf(String id) => parsers.firstWhere((it) => it.id == id);
 
@@ -67,24 +73,30 @@ void main() {
       final posts = parser.parsePage(server, res);
       expect(posts, isNotEmpty, reason: url);
       if (!server.nsfw) {
-        expect(posts.every((it) => !BooruRating.parse(it.rateValue).isNsfw),
-            true,
-            reason: 'safe search returned nsfw posts: $url');
+        expect(
+          posts.every((it) => !BooruRating.parse(it.rateValue).isNsfw),
+          true,
+          reason: 'safe search returned nsfw posts: $url',
+        );
       }
     });
 
-    test('${server.name} suggestion', skip: !enabled, () async {
-      final url = server.suggestionUrlsOf('cat');
-      final res = await dio.get(url);
-      if (res.statusCode == 401 ||
-          res.statusCode == 503 ||
-          '${res.data}'.contains('Missing authentication')) {
-        markTestSkipped('${server.name} unavailable (${res.statusCode})');
-        return;
-      }
-      final parser = parserOf(server.suggestionParserId);
-      expect(parser.canParseSuggestion(res), true, reason: url);
-      expect(parser.parseSuggestion(server, res), isNotEmpty, reason: url);
-    });
+    test(
+      '${server.name} suggestion',
+      skip: !enabled || !server.canSuggestTags,
+      () async {
+        final url = server.suggestionUrlsOf('cat');
+        final res = await dio.get(url);
+        if (res.statusCode == 401 ||
+            res.statusCode == 503 ||
+            '${res.data}'.contains('Missing authentication')) {
+          markTestSkipped('${server.name} unavailable (${res.statusCode})');
+          return;
+        }
+        final parser = parserOf(server.suggestionParserId);
+        expect(parser.canParseSuggestion(res), true, reason: url);
+        expect(parser.parseSuggestion(server, res), isNotEmpty, reason: url);
+      },
+    );
   }
 }

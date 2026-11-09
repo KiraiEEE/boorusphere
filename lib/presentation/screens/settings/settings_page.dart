@@ -29,43 +29,60 @@ class SettingsPage extends StatelessWidget {
       appBar: GlassAppBar(title: Text(context.t.settings.title)),
       body: SafeArea(
         child: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: NsfwSwitchCard(),
+            ),
             _Section(
               title: Text(context.t.settings.content),
-              children: const [
-                NsfwSwitchCard(margin: EdgeInsets.fromLTRB(16, 0, 16, 8)),
-              ],
+              children: const [_HideAi(), _BlurContent(), _BlurTimelineOnly()],
+            ),
+            _Section(
+              title: Text(context.t.settings.browsing),
+              children: const [_LoadOriginal(), _PostLimit()],
+            ),
+            _Section(
+              title: Text(context.t.settings.appearance),
+              children: const [_Language(), _MidnightMode(), _UiBlur()],
             ),
             _Section(
               title: Text(context.t.downloads.title),
               children: [
-                if (Platform.isAndroid) const _HideMedia(),
                 const _DownloadQuality(),
+                if (Platform.isAndroid) const _HideMedia(),
               ],
             ),
             _Section(
-              title: Text(context.t.settings.interface),
-              children: const [_Language(), _MidnightMode(), _UiBlur()],
+              title: Text(context.t.settings.privacy),
+              children: const [_ImeIncognito()],
             ),
             _Section(
-              title: Text(context.t.settings.safeMode),
-              children: const [
-                _BlurContent(),
-                _BlurTimelineOnly(),
-                _ImeIncognito(),
-              ],
-            ),
-            _Section(
-              title: Text(context.t.servers.title),
-              children: const [_LoadOriginal(), _PostLimit()],
-            ),
-            _Section(
-              title: Text(context.t.settings.misc),
+              title: Text(context.t.settings.data),
               children: const [_BackupRestore(), _ClearCache()],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HideAi extends ConsumerWidget {
+  const _HideAi();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(
+      contentSettingStateProvider.select((it) => it.hideAi),
+    );
+    return SwitchListTile(
+      title: Text(context.t.settings.hideAi.title),
+      subtitle: Text(context.t.settings.hideAi.desc),
+      value: value,
+      onChanged: (it) =>
+          ref.read(contentSettingStateProvider.notifier).setHideAi(it),
     );
   }
 }
@@ -78,20 +95,24 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const sectionPadding = EdgeInsets.fromLTRB(16, 12, 16, 12);
-    final sectionStyle = context.theme.textTheme.titleSmall!.copyWith(
-      color: context.colorScheme.primary,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: sectionPadding,
-          child: DefaultTextStyle(style: sectionStyle, child: title),
-        ),
-        ...children,
-      ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+            child: DefaultTextStyle(
+              style: context.theme.textTheme.labelLarge!.copyWith(
+                color: context.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+              child: title,
+            ),
+          ),
+          Card(child: Column(children: children)),
+        ],
+      ),
     );
   }
 }

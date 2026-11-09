@@ -24,7 +24,14 @@ class ContentSettingState extends _$ContentSettingState {
             BooruRating.safe,
       ),
       nsfwConfirmed: repo.get(Setting.contentNsfwConfirmed, or: false),
+      hideAi: repo.get(Setting.contentHideAi, or: false),
     );
+  }
+
+  Future<void> setHideAi(bool value) async {
+    final repo = ref.read(settingsRepoProvider);
+    state = state.copyWith(hideAi: value);
+    await repo.put(Setting.contentHideAi, value);
   }
 
   Future<void> setNsfw(bool value) async {

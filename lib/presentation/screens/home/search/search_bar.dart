@@ -1,3 +1,4 @@
+import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
@@ -186,10 +187,27 @@ class _OptionBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 11, 18, 0),
+    final sort = ref.watch(serverSettingStateProvider.select((it) => it.sort));
+    final session = ref.watch(searchSessionProvider);
+    final server = ref.watch(serverStateProvider).getById(session.serverId);
+    final sorts = SearchSort.values.where(server.supportsSort);
+
+    String sortLabel(SearchSort it) => switch (it) {
+      SearchSort.latest => context.t.sort.latest,
+      SearchSort.popular => context.t.sort.popular,
+      SearchSort.random => context.t.sort.random,
+    };
+
+    IconData sortIcon(SearchSort it) => switch (it) {
+      SearchSort.latest => Icons.schedule_rounded,
+      SearchSort.popular => Icons.local_fire_department_outlined,
+      SearchSort.random => Icons.shuffle_rounded,
+    };
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 11, 16, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
@@ -201,6 +219,26 @@ class _OptionBar extends ConsumerWidget {
                     onPressed: () => setNsfwEnabled(context, ref, true),
                   ),
           ),
+          if (sorts.length > 1) ...[
+            Container(
+              width: 1,
+              height: 20,
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              color: context.colorScheme.outlineVariant,
+            ),
+            for (final it in sorts)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: ChoiceChip(
+                  avatar: Icon(sortIcon(it), size: 16),
+                  label: Text(sortLabel(it)),
+                  selected: sort == it,
+                  showCheckmark: false,
+                  onSelected: (_) =>
+                      ref.read(serverSettingStateProvider.notifier).setSort(it),
+                ),
+              ),
+          ],
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
+import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -26,6 +27,8 @@ abstract class Server with _$Server {
     @HiveField(12, defaultValue: '') @Default('') String apiKey,
     // Whether this server is dedicated to adult content
     @HiveField(13, defaultValue: false) @Default(false) bool nsfw,
+    // Whether this server mostly hosts AI generated content
+    @HiveField(14, defaultValue: false) @Default(false) bool ai,
   }) = _Server;
 
   factory Server.fromJson(Map<String, dynamic> json) => _$ServerFromJson(json);
@@ -40,7 +43,10 @@ abstract class Server with _$Server {
   bool get isDapi => searchUrl.contains('page=dapi');
 
   RatingDialect get ratingDialect {
-    if (searchUrl.toUri().queryParameters.containsKey('offset')) {
+    if (searchParserId == 'Wallhaven.json') {
+      // rating is filtered with the "purity" parameter instead
+      return RatingDialect.none;
+    } else if (searchUrl.toUri().queryParameters.containsKey('offset')) {
       return RatingDialect.szurubooru;
     } else if (searchUrl.contains('api/v1/json/search')) {
       return RatingDialect.booruOnRails;
@@ -66,6 +72,10 @@ abstract class Server with _$Server {
     if (rate.isNotEmpty) {
       tags += ' $rate';
     }
+    final sortTag = _sortTagOf(option.sort);
+    if (sortTag.isNotEmpty) {
+      tags += ' $sortTag';
+    }
 
     if (ratingDialect == RatingDialect.booruOnRails) {
       // booru-on-rails tags contain spaces and are separated by commas
@@ -87,8 +97,51 @@ abstract class Server with _$Server {
         )
         .replaceAll('{post-offset}', (page * option.limit).toString())
         .replaceAll('{post-limit}', '${option.limit}');
-    return withAuth(url);
+    var result = url + _sortParamOf(option.sort);
+    if (searchParserId == 'Wallhaven.json' &&
+        option.searchRating == BooruRating.safe) {
+      // purity flags: sfw/sketchy/nsfw
+      result = result.replaceFirst(RegExp(r'purity=\d{3}'), 'purity=100');
+    }
+    return withAuth(result);
   }
+
+  /// Sorting expressed as a search metatag
+  String _sortTagOf(SearchSort sort) {
+    if (sort == SearchSort.latest) return '';
+    final popular = sort == SearchSort.popular;
+    return switch (searchParserId) {
+      'Danbooru.json' ||
+      'Moebooru.json' ||
+      'E621.json' => popular ? 'order:score' : 'order:random',
+      'Safebooru.xml' ||
+      'Gelbooru.json' ||
+      'Gelbooru.xml' => popular ? 'sort:score:desc' : 'sort:random',
+      'Szurubooru.json' => popular ? 'sort:score' : 'sort:random',
+      'Shimmie.xml' => popular ? 'order:score_desc' : '',
+      _ => '',
+    };
+  }
+
+  /// Sorting expressed as a url parameter
+  String _sortParamOf(SearchSort sort) {
+    final popular = sort == SearchSort.popular;
+    return switch (searchParserId) {
+      'Wallhaven.json' => switch (sort) {
+        SearchSort.latest => '&sorting=date_added',
+        _ => popular ? '&sorting=toplist' : '&sorting=random',
+      },
+      'BooruOnRails.json' when sort != SearchSort.latest =>
+        popular ? '&sf=score&sd=desc' : '&sf=random',
+      _ => '',
+    };
+  }
+
+  /// Whether this server can order results by [sort]
+  bool supportsSort(SearchSort sort) =>
+      sort == SearchSort.latest ||
+      _sortTagOf(sort).isNotEmpty ||
+      _sortParamOf(sort).isNotEmpty;
 
   String suggestionUrlsOf(String query) {
     final url = '$apiAddress/$tagSuggestionUrl'
@@ -170,7 +223,10 @@ enum RatingDialect {
   szurubooru,
 
   /// plain rating tags (Derpibooru, Furbooru, ...)
-  booruOnRails;
+  booruOnRails,
+
+  /// rating can't be expressed in the query
+  none;
 
   String tagOf(BooruRating rating) {
     return switch (this) {
@@ -194,6 +250,7 @@ enum RatingDialect {
         BooruRating.explicit => 'safety:unsafe',
         BooruRating.all => '',
       },
+      RatingDialect.none => '',
       RatingDialect.booruOnRails => switch (rating) {
         BooruRating.safe => 'safe',
         BooruRating.sensitive => 'suggestive',

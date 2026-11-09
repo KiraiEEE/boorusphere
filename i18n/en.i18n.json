@@ -252,7 +252,15 @@
       "desc": "Clear loaded content from cache",
       "done": "Cache cleared"
     },
-    "content": "Content"
+    "content": "Content",
+    "hide_ai": {
+      "title": "Hide AI-generated content",
+      "desc": "Hide posts tagged as AI art and AI-only servers"
+    },
+    "browsing": "Browsing",
+    "appearance": "Appearance",
+    "privacy": "Privacy",
+    "data": "Data"
   },
   "data_backup": {
     "title": "Backup and Restore",
@@ -283,5 +291,11 @@
     "server_hidden_desc": "Turn on NSFW content to browse this server.",
     "enable": "Turn on NSFW",
     "badge": "18+"
+  },
+  "sort": {
+    "title": "Sort",
+    "latest": "Latest",
+    "popular": "Popular",
+    "random": "Random"
   }
 }

@@ -11,7 +11,6 @@ import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_control
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
-import 'package:boorusphere/presentation/widgets/nsfw_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -53,13 +52,7 @@ class HomeDrawer extends StatelessWidget {
                           alignment: Alignment.topLeft,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _Header(),
-                              NsfwSwitchCard(
-                                margin: EdgeInsets.fromLTRB(16, 4, 16, 12),
-                              ),
-                              _ServerSelection(),
-                            ],
+                            children: [_Header(), _ServerSelection()],
                           ),
                         ),
                         Expanded(
@@ -256,7 +249,12 @@ class _ServerSelection extends ConsumerWidget {
     final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
     final session = ref.watch(searchSessionProvider);
     final serverActive = allServers.getById(session.serverId);
-    final servers = allServers.where((it) => nsfw || !it.nsfw);
+    final hideAi = ref.watch(
+      contentSettingStateProvider.select((it) => it.hideAi),
+    );
+    final servers = allServers.where(
+      (it) => (nsfw || !it.nsfw) && !(hideAi && it.ai),
+    );
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 260),

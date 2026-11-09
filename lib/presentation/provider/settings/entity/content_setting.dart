@@ -11,5 +11,6 @@ abstract class ContentSetting with _$ContentSetting {
     @Default(false) bool videoMuted,
     @Default(false) bool nsfw,
     @Default(false) bool nsfwConfirmed,
+    @Default(false) bool hideAi,
   }) = _ContentSetting;
 }

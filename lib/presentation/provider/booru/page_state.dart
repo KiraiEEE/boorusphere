@@ -51,7 +51,18 @@ class PageState extends _$PageState {
     _ids.clear();
 
     // Re-filter what we already have when the rules change, no refetch needed
-    ref.listen(blacklistProvider(session.serverId), (_, __) => _refilter());
+    ref.listen(blacklistProvider(session.serverId), (_, _) => _refilter());
+    ref.listen(
+      contentSettingStateProvider.select((it) => it.hideAi),
+      (_, _) => _refilter(),
+    );
+    ref.listen(serverSettingStateProvider.select((it) => it.sort), (
+      prev,
+      next,
+    ) {
+      if (prev == next) return;
+      unawaited(update((it) => it.copyWith(clear: true)));
+    });
     ref.listen(contentSettingStateProvider.select((it) => it.nsfw), (
       prev,
       next,
@@ -72,15 +83,38 @@ class PageState extends _$PageState {
 
   Blacklist get _blacklist => ref.read(blacklistProvider(session.serverId));
 
-  bool _isVisible(Post post, Blacklist blacklist, bool nsfw) {
+  static const _aiTags = {
+    'ai-generated',
+    'ai_generated',
+    'ai-assisted',
+    'ai_assisted',
+    'ai_art',
+    'ai-created',
+    'ai_created',
+    'stable_diffusion',
+    'novelai',
+    'midjourney',
+    'nijijourney',
+  };
+
+  static bool isAiGenerated(Post post) =>
+      post.allTags.any((it) => _aiTags.contains(it.toLowerCase()));
+
+  bool _isVisible(Post post, Blacklist blacklist, bool nsfw, bool hideAi) {
     if (!nsfw && post.rating.isNsfw) return false;
+    if (hideAi && isAiGenerated(post)) return false;
     return !blacklist.matches(post);
   }
 
   ({List<Post> visible, int hidden}) _filtered() {
     final blacklist = _blacklist;
     final nsfw = _nsfw;
-    final visible = _posts.where((it) => _isVisible(it, blacklist, nsfw));
+    final hideAi = ref.read(contentSettingStateProvider).hideAi;
+    // everything on an AI-only server counts as AI content
+    final hideAll = hideAi && _server.ai;
+    final visible = _posts.where(
+      (it) => !hideAll && _isVisible(it, blacklist, nsfw, hideAi),
+    );
     final list = List<Post>.unmodifiable(visible);
     return (visible: list, hidden: _posts.length - list.length);
   }
@@ -136,6 +170,7 @@ class PageState extends _$PageState {
     final option = state.data.option.copyWith(
       limit: settings.postLimit,
       searchRating: ref.read(effectiveRatingProvider),
+      sort: settings.sort,
     );
 
     if (option.clear) {

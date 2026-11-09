@@ -14,8 +14,19 @@ class UserServerRepo implements ServerRepo {
   final Map<String, Server> _defaults;
   final Box<Server> box;
 
+  /// Presets first in their bundled order (best to worst), then custom ones
   @override
-  List<Server> get servers => box.values.toList();
+  List<Server> get servers {
+    final rank = {for (final (i, k) in _defaults.keys.indexed) k: i};
+    final entries = box.toMap().entries.toList()
+      ..sort(
+        (a, b) =>
+            (rank[a.key] ?? rank.length).compareTo(rank[b.key] ?? rank.length),
+      );
+    return entries.map((it) => it.value).toList();
+  }
+
+  Box get _meta => Hive.box(metaKey);
 
   @override
   Map<String, Server> get defaults => _defaults;
@@ -67,12 +78,29 @@ class UserServerRepo implements ServerRepo {
   Future<void> populate() async {
     if (_defaults.isEmpty) return;
 
+    final seen = Set<String>.from(_meta.get('presets', defaultValue: []));
     if (box.isEmpty) {
       await box.putAll(_defaults);
     } else {
       await _migrateKeys();
       await _syncPresets();
+      // add presets introduced by app updates, but never re-add one that
+      // the user removed
+      final added = Map.fromEntries(
+        _defaults.entries.where(
+          (it) => !seen.contains(it.key) && !box.containsKey(it.key),
+        ),
+      );
+      if (seen.isNotEmpty && added.isNotEmpty) await box.putAll(added);
+      if (seen.isEmpty) {
+        // first run with tracking: add what's missing once
+        final missing = Map.fromEntries(
+          _defaults.entries.where((it) => !box.containsKey(it.key)),
+        );
+        await box.putAll(missing);
+      }
     }
+    await _meta.put('presets', _defaults.keys.toList());
   }
 
   @override
@@ -123,8 +151,10 @@ class UserServerRepo implements ServerRepo {
   }
 
   static const String key = 'server';
+  static const String metaKey = 'server_meta';
 
   static Future<void> prepare() async {
     await Hive.openBox<Server>(key);
+    await Hive.openBox(metaKey);
   }
 }

@@ -10,6 +10,7 @@ import 'package:boorusphere/data/repository/booru/parser/moebooru_json_parser.da
 import 'package:boorusphere/data/repository/booru/parser/safebooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/shimmie_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/szurubooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/wallhaven_json_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'provider.g.dart';
@@ -28,5 +29,6 @@ List<BooruParser> booruParsers(Ref ref) {
     SafebooruXmlParser(),
     ShimmieXmlParser(),
     SzurubooruJsonParser(),
+    WallhavenJsonParser(),
   ];
 }

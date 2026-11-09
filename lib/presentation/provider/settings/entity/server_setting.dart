@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
+import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -10,6 +11,7 @@ abstract class ServerSetting with _$ServerSetting {
     @Default('') String lastActiveId,
     @Default(PageOption.defaultLimit) int postLimit,
     @Default(BooruRating.safe) BooruRating searchRating,
+    @Default(SearchSort.latest) SearchSort sort,
   }) = _ServerSetting;
   const ServerSetting._();
 }
