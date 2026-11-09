@@ -153,14 +153,16 @@ class DataBackupState extends _$DataBackupState {
       if (option.searchHistory) searchHistory,
     ];
 
-    await Future.wait(entries.map((entry) async {
-      final item = await entry;
-      final data = item.value;
-      if (data is List && data.isEmpty) return;
+    await Future.wait(
+      entries.map((entry) async {
+        final item = await entry;
+        final data = item.value;
+        if (data is List && data.isEmpty) return;
 
-      final file = File(path.join(temp.path, '${item.key}.json'));
-      await file.writeAsString(jsonEncode(data));
-    }));
+        final file = File(path.join(temp.path, '${item.key}.json'));
+        await file.writeAsString(jsonEncode(data));
+      }),
+    );
 
     // add sequentially, ZipFileEncoder is not safe for concurrent writes
     for (final file in temp.listSync().whereType<File>()) {

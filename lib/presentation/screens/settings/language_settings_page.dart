@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -11,7 +12,8 @@ class LanguageSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.settings.lang.title)),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.settings.lang.title)),
       body: const SafeArea(child: _Content()),
     );
   }
@@ -55,7 +57,7 @@ class _Content extends ConsumerWidget {
               updateLocale(locale);
             },
           );
-        })
+        }),
       ],
     );
   }

@@ -73,8 +73,9 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        sharedStorageHandleProvider
-            .overrideWithValue(await provideSharedStorageHandle()),
+        sharedStorageHandleProvider.overrideWithValue(
+          await provideSharedStorageHandle(),
+        ),
         cookieJarProvider.overrideWithValue(await provideCookieJar()),
         defaultServersProvider.overrideWithValue(await provideDefaultServers()),
         envRepoProvider.overrideWithValue(await provideEnvRepo()),

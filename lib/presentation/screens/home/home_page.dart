@@ -35,8 +35,9 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final savedServerId =
-        ref.read(serverSettingStateProvider.select((it) => it.lastActiveId));
+    final savedServerId = ref.read(
+      serverSettingStateProvider.select((it) => it.lastActiveId),
+    );
     final session = this.session ?? SearchSession(serverId: savedServerId);
     final envRepo = ref.read(envRepoProvider);
     final appStateRepo = ref.read(appStateRepoProvider);
@@ -58,9 +59,7 @@ class HomePage extends HookConsumerWidget {
         child: ProviderScope(
           overrides: [
             searchSessionProvider.overrideWith((ref) => session),
-            pageStateProvider.overrideWith(
-              () => PageState(session: session),
-            ),
+            pageStateProvider.overrideWith(() => PageState(session: session)),
             suggestionStateProvider.overrideWith(
               () => SuggestionState(session: session),
             ),
@@ -106,7 +105,8 @@ class _Home extends HookConsumerWidget {
     }
 
     return PopScope(
-      canPop: (allowPop.value || context.router.canPop()) &&
+      canPop:
+          (allowPop.value || context.router.canPop()) &&
           !drawer.isOpen &&
           !searchBar.isOpen,
       onPopInvokedWithResult: (didPop, _) async {
@@ -123,10 +123,12 @@ class _Home extends HookConsumerWidget {
 
         if (!allowPop.value && !context.router.canPop()) {
           allowPop.value = true;
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.retryPopBack),
-            duration: maybePopTimeout,
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.retryPopBack),
+              duration: maybePopTimeout,
+            ),
+          );
           maybePopTimer.cancel();
           maybePopTimer.reset();
         }
@@ -158,8 +160,9 @@ class _SlidableContainer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final animator =
-        useAnimationController(duration: const Duration(milliseconds: 300));
+    final animator = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
     final tween = CurvedAnimation(
       parent: animator,
       curve: Curves.easeOutCubic,
@@ -214,7 +217,8 @@ class _SlidableContainer extends HookConsumerWidget {
         if (animator.isCompleted || animator.isDismissed) return;
 
         if (details.velocity.pixelsPerSecond.dx.abs() >= 365) {
-          final visualVelocity = details.velocity.pixelsPerSecond.dx /
+          final visualVelocity =
+              details.velocity.pixelsPerSecond.dx /
               context.mediaQuery.size.width;
 
           await animator.fling(velocity: visualVelocity);
@@ -237,7 +241,10 @@ class _SlidableContainer extends HookConsumerWidget {
               Transform(
                 transform: Matrix4.identity()
                   ..setTranslationRaw(
-                      (1 - tween.value) * (maxDrawerWidth / 2), 0, 0)
+                    (1 - tween.value) * (maxDrawerWidth / 2),
+                    0,
+                    0,
+                  )
                   ..translateByDouble(slide - maxDrawerWidth, 0, 0, 1),
                 alignment: Alignment.centerLeft,
                 child: HomeDrawer(maxWidth: maxDrawerWidth),
@@ -251,8 +258,9 @@ class _SlidableContainer extends HookConsumerWidget {
                     ignoring: animator.isCompleted,
                     // keep the tree stable so the timeline never remounts
                     child: ClipRRect(
-                      clipBehavior:
-                          tween.value == 0 ? Clip.none : Clip.antiAlias,
+                      clipBehavior: tween.value == 0
+                          ? Clip.none
+                          : Clip.antiAlias,
                       borderRadius: BorderRadius.horizontal(
                         left: Radius.circular(28 * tween.value),
                       ),
@@ -264,8 +272,9 @@ class _SlidableContainer extends HookConsumerWidget {
                             Positioned.fill(
                               child: IgnorePointer(
                                 child: ColoredBox(
-                                  color: Colors.black
-                                      .withValues(alpha: 0.18 * tween.value),
+                                  color: Colors.black.withValues(
+                                    alpha: 0.18 * tween.value,
+                                  ),
                                 ),
                               ),
                             ),

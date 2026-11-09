@@ -4,6 +4,7 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -20,7 +21,8 @@ class ServerPresetPage extends ConsumerWidget {
     final all = {...defaults.values, ...servers};
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.servers.select)),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.servers.select)),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

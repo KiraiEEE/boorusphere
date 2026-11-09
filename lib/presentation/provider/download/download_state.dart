@@ -20,10 +20,7 @@ class DownloadEntryState extends _$DownloadEntryState {
   Future<void> add(DownloadEntry entry) async {
     final repo = ref.read(downloadsRepoProvider);
     await repo.addEntry(entry);
-    state = [
-      ...state.where((it) => it.id != entry.id),
-      entry,
-    ];
+    state = [...state.where((it) => it.id != entry.id), entry];
   }
 
   Future<void> remove(String id) async {
@@ -37,10 +34,7 @@ class DownloadEntryState extends _$DownloadEntryState {
     final repo = ref.read(downloadsRepoProvider);
     await repo.removeEntry(id);
     await repo.addEntry(entry);
-    state = [
-      ...state.where((it) => it.id != id),
-      entry,
-    ];
+    state = [...state.where((it) => it.id != id), entry];
   }
 
   Future<void> clear() async {

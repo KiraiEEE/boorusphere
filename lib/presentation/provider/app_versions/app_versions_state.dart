@@ -10,13 +10,7 @@ typedef AppVersions = ({AppVersion current, AppVersion latest});
 class AppVersionsState extends _$AppVersionsState {
   @override
   Future<AppVersions> build() async {
-    ref.onDispose(() {
-      state = const AsyncValue.loading();
-    });
     final repo = ref.read(versionRepoProvider);
-    return (
-      current: repo.current,
-      latest: await repo.fetch(),
-    );
+    return (current: repo.current, latest: await repo.fetch());
   }
 }

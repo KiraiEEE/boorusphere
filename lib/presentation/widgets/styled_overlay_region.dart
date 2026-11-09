@@ -17,8 +17,9 @@ class StyledOverlayRegion extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = this.theme;
     final isNightMode = nightMode ?? context.brightness == Brightness.dark;
-    final foregroundBrightness =
-        isNightMode ? Brightness.light : Brightness.dark;
+    final foregroundBrightness = isNightMode
+        ? Brightness.light
+        : Brightness.dark;
 
     final defStyle =
         (isNightMode ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)

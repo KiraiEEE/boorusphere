@@ -42,12 +42,14 @@ class ServerDetails extends HookConsumerWidget {
     }
 
     final servers = ref.watch(serverStateProvider);
-    final imeIncognito =
-        ref.watch(uiSettingStateProvider.select((it) => it.imeIncognito));
+    final imeIncognito = ref.watch(
+      uiSettingStateProvider.select((it) => it.imeIncognito),
+    );
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final cName = useTextEditingController(text: server.id);
     final cAlias = useTextEditingController(
-        text: server.alias.isEmpty ? server.id : server.alias);
+      text: server.alias.isEmpty ? server.id : server.alias,
+    );
     final cSearchUrl = useTextEditingController(text: server.searchUrl);
     final cSuggestUrl = useTextEditingController(text: server.tagSuggestionUrl);
     final cPostUrl = useTextEditingController(text: server.postUrl);
@@ -120,8 +122,9 @@ class ServerDetails extends HookConsumerWidget {
                     validator: (value) {
                       final serverName = servers.map((it) => it.id);
                       if (!isEditing && serverName.contains(value)) {
-                        return context.t.servers
-                            .alreadyExists(name: value ?? '');
+                        return context.t.servers.alreadyExists(
+                          name: value ?? '',
+                        );
                       }
 
                       return null;
@@ -197,8 +200,9 @@ class ServerDetails extends HookConsumerWidget {
                   controller: cSuggestUrl,
                   enableIMEPersonalizedLearning: !imeIncognito,
                   decoration: InputDecoration(
-                      border: const UnderlineInputBorder(),
-                      labelText: context.t.serverQuery.suggestion),
+                    border: const UnderlineInputBorder(),
+                    labelText: context.t.serverQuery.suggestion,
+                  ),
                 ),
                 TextFormField(
                   minLines: 1,
@@ -216,10 +220,7 @@ class ServerDetails extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 16, right: 16),
-          child: ElevatedButton(
-            onPressed: onSave,
-            child: Text(context.t.save),
-          ),
+          child: ElevatedButton(onPressed: onSave, child: Text(context.t.save)),
         ),
       ],
     );
@@ -308,17 +309,14 @@ class ParserSelector extends HookWidget {
 
             onChanged.call(await selectParser(context, label, parsers, value));
           },
-        )
+        ),
       ],
     );
   }
 }
 
 class ParserLabel extends StatelessWidget {
-  const ParserLabel({
-    super.key,
-    required this.id,
-  });
+  const ParserLabel({super.key, required this.id});
 
   final String id;
 

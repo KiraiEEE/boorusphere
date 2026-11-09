@@ -96,14 +96,17 @@ class Blacklist {
 class BlacklistRule {
   const BlacklistRule._(this.source, this.terms);
 
-  static BlacklistRule? parse(String input) {
+  /// Rules made only of negations are rejected unless [allowOnlyNegation],
+  /// as they would hide nearly everything in a blacklist.
+  static BlacklistRule? parse(String input, {bool allowOnlyNegation = false}) {
     final words = input
         .trim()
         .toLowerCase()
         .split(RegExp(r'\s+'))
         .where((it) => it.isNotEmpty && it != '-');
     final terms = words.map(BlacklistTerm.parse).toList();
-    if (terms.isEmpty || terms.every((it) => it.negated)) return null;
+    if (terms.isEmpty) return null;
+    if (!allowOnlyNegation && terms.every((it) => it.negated)) return null;
     return BlacklistRule._(words.join(' '), terms);
   }
 
@@ -152,12 +155,10 @@ sealed class BlacklistTerm {
 
 class _TagTerm extends BlacklistTerm {
   _TagTerm(super.negated, this.value)
-      : isWildcard = value.contains('*'),
-        _pattern = value.contains('*')
-            ? RegExp(
-                '^${value.split('*').map(RegExp.escape).join('.*')}\$',
-              )
-            : null;
+    : isWildcard = value.contains('*'),
+      _pattern = value.contains('*')
+          ? RegExp('^${value.split('*').map(RegExp.escape).join('.*')}\$')
+          : null;
 
   final String value;
   final bool isWildcard;

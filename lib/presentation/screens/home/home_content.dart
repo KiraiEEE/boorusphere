@@ -20,16 +20,20 @@ class HomeContent extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pageState = ref.watch(pageStateProvider);
     final session = ref.watch(searchSessionProvider);
-    final hasServers =
-        ref.watch(serverStateProvider.select((it) => it.isNotEmpty));
+    final hasServers = ref.watch(
+      serverStateProvider.select((it) => it.isNotEmpty),
+    );
     // posts are already filtered by blacklist and safe mode in PageState
     final posts = pageState.data.posts;
 
     useEffect(() {
       if (hasServers) {
         Future(() {
-          ref.read(pageStateProvider.notifier).update(
-              (option) => option.copyWith(query: session.query, clear: true));
+          ref
+              .read(pageStateProvider.notifier)
+              .update(
+                (option) => option.copyWith(query: session.query, clear: true),
+              );
         });
       }
       return null;
@@ -62,9 +66,11 @@ class HomeContent extends HookConsumerWidget {
       children: [
         RefreshIndicator(
           onRefresh: () async {
-            unawaited(ref
-                .read(pageStateProvider.notifier)
-                .update((it) => it.copyWith(clear: true)));
+            unawaited(
+              ref
+                  .read(pageStateProvider.notifier)
+                  .update((it) => it.copyWith(clear: true)),
+            );
           },
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -74,9 +80,7 @@ class HomeContent extends HookConsumerWidget {
                 SliverSafeArea(
                   sliver: SliverPadding(
                     padding: const EdgeInsets.all(10),
-                    sliver: Timeline(
-                      posts: posts,
-                    ),
+                    sliver: Timeline(posts: posts),
                   ),
                 ),
               if (!isNewSearch)

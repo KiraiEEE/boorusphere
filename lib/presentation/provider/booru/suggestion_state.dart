@@ -49,8 +49,9 @@ class SuggestionState extends _$SuggestionState {
     state = FetchResult.loading(state.data);
     _lastWord = word;
     try {
-      final res =
-          await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
+      final res = await ref
+          .read(imageboardRepoProvider(server))
+          .getSuggestion(word);
       if (!ref.mounted || word != _lastWord) return;
       final blacklist = ref.read(blacklistProvider(server.id));
       final result = res.whereNot(blacklist.blocksTag).toSet();

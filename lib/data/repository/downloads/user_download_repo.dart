@@ -130,7 +130,7 @@ Future<void> _migrateProgresses(Box<DownloadProgress> box) async {
           4 => DownloadStatus.failed,
           5 => DownloadStatus.canceled,
           6 => DownloadStatus.paused,
-          _ => DownloadStatus.empty
+          _ => DownloadStatus.empty,
         },
         progress: prog,
         timestamp: timestamp,

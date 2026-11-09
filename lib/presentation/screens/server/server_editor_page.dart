@@ -11,6 +11,7 @@ import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart
 import 'package:boorusphere/presentation/screens/server/server_details.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/error_info.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -26,7 +27,8 @@ class ServerEditorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(
         title: Text(
           server != Server.empty
               ? context.t.servers.edit(name: server.name)
@@ -53,14 +55,21 @@ class _ServerEditor extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
-    final imeIncognito =
-        ref.watch(uiSettingStateProvider.select((it) => it.imeIncognito));
+    final imeIncognito = ref.watch(
+      uiSettingStateProvider.select((it) => it.imeIncognito),
+    );
     final server = useState(_server);
     final useApiAddr = useState(_server.apiAddr.isNotEmpty);
     final homepage = useTextEditingController(
-        text: isEditing ? _server.homepage : 'https://');
+      text: isEditing ? _server.homepage : 'https://',
+    );
     final apiAddr = useTextEditingController(
-        text: _server.apiAddr.isEmpty ? 'https://' : _server.apiAddr);
+      text: _server.apiAddr.isEmpty ? 'https://' : _server.apiAddr,
+    );
+    final login = useTextEditingController(text: _server.login);
+    final apiKey = useTextEditingController(text: _server.apiKey);
+    final nsfw = useState(_server.nsfw);
+    final showKey = useState(false);
 
     validateAddress(String? value) {
       if (value?.contains(RegExp(r'https?://.+\..+')) == false) {
@@ -130,8 +139,10 @@ class _ServerEditor extends HookConsumerWidget {
                       homepage: homepage.text,
                       apiAddr: useApiAddr.value ? apiAddr.text : '',
                     );
-                    final result =
-                        await ScannerDialog.open(context, baseServer);
+                    final result = await ScannerDialog.open(
+                      context,
+                      baseServer,
+                    );
                     if (result.searchParserId.isNotEmpty) {
                       server.value = result;
                     }
@@ -146,6 +157,66 @@ class _ServerEditor extends HookConsumerWidget {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    context.t.servers.credentials,
+                    style: context.theme.textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.t.servers.credentialsDesc,
+                    style: context.theme.textTheme.bodySmall?.copyWith(
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: login,
+                    autocorrect: false,
+                    enableIMEPersonalizedLearning: false,
+                    decoration: InputDecoration(
+                      labelText: context.t.servers.login,
+                      prefixIcon: const Icon(Icons.person_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: apiKey,
+                    autocorrect: false,
+                    obscureText: !showKey.value,
+                    enableIMEPersonalizedLearning: false,
+                    decoration: InputDecoration(
+                      labelText: context.t.servers.apiKey,
+                      prefixIcon: const Icon(Icons.key_rounded),
+                      suffixIcon: IconButton(
+                        onPressed: () => showKey.value = !showKey.value,
+                        icon: Icon(
+                          showKey.value
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: nsfw.value,
+                    onChanged: (it) => nsfw.value = it,
+                    title: Text(context.t.servers.nsfwFlag),
+                    subtitle: Text(context.t.servers.nsfwFlagDesc),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
         ServerDetails(
           server: server.value,
           isEditing: isEditing,
@@ -154,6 +225,9 @@ class _ServerEditor extends HookConsumerWidget {
             newServer = newServer.copyWith(
               homepage: homepage.text,
               apiAddr: useApiAddr.value ? apiAddr.text : '',
+              login: login.text.trim(),
+              apiKey: apiKey.text.trim(),
+              nsfw: nsfw.value,
             );
 
             if (isEditing) {
@@ -171,10 +245,7 @@ class _ServerEditor extends HookConsumerWidget {
 }
 
 class ScannerDialog extends HookConsumerWidget {
-  const ScannerDialog({
-    super.key,
-    required this.server,
-  });
+  const ScannerDialog({super.key, required this.server});
 
   final Server server;
   static Future<Server> open(BuildContext context, Server server) async {
@@ -238,7 +309,7 @@ class ScannerDialog extends HookConsumerWidget {
                           color: Colors.greenAccent,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -260,7 +331,8 @@ class ScannerDialog extends HookConsumerWidget {
                 ),
               if (isScanning)
                 const LinearProgressIndicator(
-                    backgroundColor: Colors.transparent),
+                  backgroundColor: Colors.transparent,
+                ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextButton(
@@ -277,7 +349,7 @@ class ScannerDialog extends HookConsumerWidget {
                     isScanning ? context.t.cancel : context.t.actionContinue,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],

@@ -28,10 +28,12 @@ class Timeline extends ConsumerWidget {
     final grid = ref.watch(uiSettingStateProvider.select((ui) => ui.grid));
     final screenWidth = context.mediaQuery.size.width;
     final flexibleGrid = (screenWidth / 200).round() + grid;
-    final scrollController = ref
-        .watch(timelineControllerProvider.select((it) => it.scrollController));
-    final blurExplicit =
-        ref.watch(contentSettingStateProvider.select((it) => it.blurExplicit));
+    final scrollController = ref.watch(
+      timelineControllerProvider.select((it) => it.scrollController),
+    );
+    final blurExplicit = ref.watch(
+      contentSettingStateProvider.select((it) => it.blurExplicit),
+    );
 
     return SliverMasonryGrid.count(
       crossAxisCount: flexibleGrid,
@@ -86,26 +88,37 @@ class _ThumbnailCard extends HookConsumerWidget {
           onTap: onTap,
           child: Hero(
             tag: post.viewId,
-            flightShuttleBuilder: (flightContext, animation, flightDirection,
-                fromHeroContext, toHeroContext) {
-              final Hero toHero = toHeroContext.widget as Hero;
-              final isLong = post.aspectRatio < 0.5;
-              final isPop = flightDirection == HeroFlightDirection.pop;
+            flightShuttleBuilder:
+                (
+                  flightContext,
+                  animation,
+                  flightDirection,
+                  fromHeroContext,
+                  toHeroContext,
+                ) {
+                  final Hero toHero = toHeroContext.widget as Hero;
+                  final isLong = post.aspectRatio < 0.5;
+                  final isPop = flightDirection == HeroFlightDirection.pop;
 
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  AspectRatio(
-                    aspectRatio: isPop && isLong ? 0.5 : post.aspectRatio,
-                    // clip incoming child to avoid overflow that might be
-                    // caused by blurExplicit enabled
-                    child: isPop ? ClipRect(child: toHero.child) : toHero.child,
-                  ),
-                ],
-              );
-            },
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: isPop && isLong ? 0.5 : post.aspectRatio,
+                        // clip incoming child to avoid overflow that might be
+                        // caused by blurExplicit enabled
+                        child: isPop
+                            ? ClipRect(child: toHero.child)
+                            : toHero.child,
+                      ),
+                    ],
+                  );
+                },
             child: _ThumbnailImage(
-                post: post, blurExplicit: blurExplicit, gridSize: gridSize),
+              post: post,
+              blurExplicit: blurExplicit,
+              gridSize: gridSize,
+            ),
           ),
         ),
       ),
@@ -184,10 +197,7 @@ class _ThumbnailImage extends ConsumerWidget {
     return isLong
         ? Stack(
             alignment: Alignment.bottomCenter,
-            children: [
-              image,
-              const _LongThumbnailIndicator(),
-            ],
+            children: [image, const _LongThumbnailIndicator()],
           )
         : image;
   }
@@ -199,7 +209,7 @@ class _LongThumbnailIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: context.colorScheme.surface.withOpacity(0.8),
+      color: context.colorScheme.surface.withValues(alpha: 0.8),
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: const RoundedRectangleBorder(
@@ -217,9 +227,7 @@ class _LongThumbnailIndicator extends StatelessWidget {
 }
 
 class _Placeholder extends StatelessWidget {
-  const _Placeholder({
-    this.isFailed = false,
-  });
+  const _Placeholder({this.isFailed = false});
 
   final bool isFailed;
 
@@ -245,15 +253,12 @@ class _Placeholder extends StatelessWidget {
           baseColor,
           highlightColor,
           baseColor,
-          baseColor
+          baseColor,
         ],
         stops: const <double>[0.0, 0.35, 0.5, 0.65, 1.0],
       ),
       period: const Duration(milliseconds: 700),
-      child: Container(
-        color: Colors.black,
-        child: const SizedBox.expand(),
-      ),
+      child: Container(color: Colors.black, child: const SizedBox.expand()),
     );
   }
 }

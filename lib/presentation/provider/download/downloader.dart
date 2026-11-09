@@ -39,8 +39,9 @@ class Downloader {
   }) async {
     final fileUrl = url ?? post.originalFile;
     // sanitize forbidden characters on the file name
-    final fileName = Uri.decodeComponent(fileUrl.fileName)
-        .replaceAll(RegExp(r'([^a-zA-Z0-9\s\.\(\)_]+)'), '_');
+    final fileName = Uri.decodeComponent(
+      fileUrl.fileName,
+    ).replaceAll(RegExp(r'([^a-zA-Z0-9\s\.\(\)_]+)'), '_');
     final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
 
     await sharedStorageHandle.init();
@@ -76,7 +77,8 @@ class Downloader {
     // start it again from the post data.
     if (entry == DownloadEntry.empty) return;
     final post = entry.post;
-    final url = post.sampleFile.isNotEmpty &&
+    final url =
+        post.sampleFile.isNotEmpty &&
             Uri.decodeComponent(post.sampleFile.fileName) ==
                 Uri.decodeComponent(entry.dest)
         ? post.sampleFile

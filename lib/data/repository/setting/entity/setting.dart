@@ -16,5 +16,5 @@ enum Setting {
   imeIncognito,
   searchRating,
   contentNsfw,
-  contentNsfwConfirmed;
+  contentNsfwConfirmed,
 }

@@ -11,6 +11,7 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/expandable_group_list_view.dart';
 import 'package:boorusphere/presentation/widgets/notice_card.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,27 +23,33 @@ class DownloadsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final savedServerId =
-        ref.read(serverSettingStateProvider.select((it) => it.lastActiveId));
+    final savedServerId = ref.read(
+      serverSettingStateProvider.select((it) => it.lastActiveId),
+    );
     final session = this.session ?? SearchSession(serverId: savedServerId);
     final servers = ref.watch(serverStateProvider);
-    final downloadEntries =
-        ref.watch(downloadEntryStateProvider).whereNotReserved();
+    final downloadEntries = ref
+        .watch(downloadEntryStateProvider)
+        .whereNotReserved();
     final downloadProgressState = ref.watch(downloadProgressStateProvider);
-    final groupByServer = ref
-        .watch(downloadSettingStateProvider.select((it) => it.groupByServer));
+    final groupByServer = ref.watch(
+      downloadSettingStateProvider.select((it) => it.groupByServer),
+    );
     final filter = useState(DownloadFilter.none);
     var filteredEntries = downloadEntries;
     if (filter.value != DownloadFilter.none) {
-      filteredEntries = downloadEntries.where((it) =>
-          downloadProgressState.getById(it.id).status ==
-          filter.value.toStatus());
+      filteredEntries = downloadEntries.where(
+        (it) =>
+            downloadProgressState.getById(it.id).status ==
+            filter.value.toStatus(),
+      );
     }
 
     return ProviderScope(
       overrides: [searchSessionProvider.overrideWith((ref) => session)],
       child: Scaffold(
-        appBar: AppBar(
+        extendBodyBehindAppBar: true,
+        appBar: GlassAppBar(
           title: Text(context.t.downloads.title),
           actions: [
             if (downloadEntries.isNotEmpty)
@@ -92,7 +99,7 @@ class DownloadsPage extends HookConsumerWidget {
                     ),
                   ];
                 },
-              )
+              ),
           ],
         ),
         body: SafeArea(
@@ -137,14 +144,16 @@ class DownloadsPage extends HookConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: DownloadFilter.values
-                .map((e) => RadioListTile(
-                      value: e,
-                      groupValue: current,
-                      title: Text(e.describe(context)),
-                      onChanged: (value) {
-                        context.navigator.pop(value);
-                      },
-                    ))
+                .map(
+                  (e) => RadioListTile(
+                    value: e,
+                    groupValue: current,
+                    title: Text(e.describe(context)),
+                    onChanged: (value) {
+                      context.navigator.pop(value);
+                    },
+                  ),
+                )
                 .toList(),
           ),
         );

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/routes/slide_page_route.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,8 +32,11 @@ class LicenseData {
   }
 
   Map<String, Iterable<LicenseEntry>> toMap() {
-    return Map.fromEntries(_packages.sorted().map(
-        (it) => MapEntry(it, _licenses.where((e) => e.packages.contains(it)))));
+    return Map.fromEntries(
+      _packages.sorted().map(
+        (it) => MapEntry(it, _licenses.where((e) => e.packages.contains(it))),
+      ),
+    );
   }
 }
 
@@ -44,7 +48,8 @@ class LicensesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final registry = ref.watch(licenseRegistryProvider);
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.ossLicense)),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.ossLicense)),
       body: SafeArea(
         child: registry.maybeWhen(
           data: (data) {
@@ -99,10 +104,12 @@ class PackageLicenses extends StatelessWidget {
         title: Text(context.t.license.title(n: count)),
         centerTitle: true,
         bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(32),
-            child: Padding(
-                padding: const EdgeInsets.only(bottom: 18),
-                child: Text(context.t.license.package(name: packageName)))),
+          preferredSize: const Size.fromHeight(32),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: Text(context.t.license.package(name: packageName)),
+          ),
+        ),
       ),
       body: ListView.separated(
         itemCount: packageLicenses.length,

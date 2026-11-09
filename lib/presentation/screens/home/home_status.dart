@@ -37,21 +37,21 @@ class HomeStatus extends HookConsumerWidget {
       child: switch (pageState) {
         IdleFetchResult() => const SizedBox.shrink(),
         DataFetchResult() => Column(
-            key: const ValueKey('data'),
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FilledButton.tonal(
-                onPressed: ref.read(pageStateProvider.notifier).loadMore,
-                child: Text(context.t.loadMore),
-              ),
-              if (hidden > 0) _HiddenCount(hidden),
-            ],
-          ),
+          key: const ValueKey('data'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton.tonal(
+              onPressed: ref.read(pageStateProvider.notifier).loadMore,
+              child: Text(context.t.loadMore),
+            ),
+            if (hidden > 0) _HiddenCount(hidden),
+          ],
+        ),
         LoadingFetchResult() => const SizedBox(
-            key: ValueKey('loading'),
-            height: 56,
-            child: Center(child: RefreshProgressIndicator()),
-          ),
+          key: ValueKey('loading'),
+          height: 56,
+          child: Center(child: RefreshProgressIndicator()),
+        ),
         ErrorFetchResult(:final data, :final error, :final stackTrace) =>
           _ErrorStatus(
             key: const ValueKey('error'),
@@ -84,8 +84,9 @@ class _HiddenCount extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             context.t.pageStatus.hidden(n: count),
-            style: context.theme.textTheme.labelMedium
-                ?.copyWith(color: context.colorScheme.onSurfaceVariant),
+            style: context.theme.textTheme.labelMedium?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -114,8 +115,10 @@ class _ErrorStatus extends ConsumerWidget {
     } else if (e == BooruError.empty) {
       return data.option.query.isEmpty
           ? context.t.pageStatus.noResult(n: data.posts.length)
-          : context.t.pageStatus
-              .noResultForQuery(n: data.posts.length, query: data.option.query);
+          : context.t.pageStatus.noResultForQuery(
+              n: data.posts.length,
+              query: data.option.query,
+            );
     } else if (e == BooruError.tagsBlocked) {
       return context.t.pageStatus.blocked(query: data.option.query);
     } else {
@@ -160,8 +163,9 @@ class _ErrorStatus extends ConsumerWidget {
       );
     }
 
-    final rating =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+    final rating = ref.watch(
+      serverSettingStateProvider.select((it) => it.searchRating),
+    );
     final canWidenRating = error == BooruError.empty && data.posts.isEmpty;
 
     return Center(
@@ -240,8 +244,9 @@ class _Notice extends StatelessWidget {
             Text(
               desc,
               textAlign: TextAlign.center,
-              style: context.theme.textTheme.bodyMedium
-                  ?.copyWith(color: context.colorScheme.onSurfaceVariant),
+              style: context.theme.textTheme.bodyMedium?.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(

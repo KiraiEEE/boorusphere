@@ -35,8 +35,8 @@ class Glass extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final blur = ref.watch(uiSettingStateProvider.select((it) => it.blur));
     final base = color ?? context.theme.scaffoldBackgroundColor;
-    final alpha = opacity ??
-        (blur ? (context.isLightThemed ? 0.72 : 0.64) : 0.97);
+    final alpha =
+        opacity ?? (blur ? (context.isLightThemed ? 0.72 : 0.64) : 0.97);
 
     Widget content = DecoratedBox(
       decoration: BoxDecoration(
@@ -77,8 +77,8 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
   final PreferredSizeWidget? bottom;
 
   @override
-  Size get preferredSize => Size.fromHeight(
-      kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context) {

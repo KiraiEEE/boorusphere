@@ -22,9 +22,7 @@ Future<CookieJar> provideCookieJar() async {
   final dir = Platform.isAndroid
       ? await getApplicationDocumentsDirectory()
       : await getApplicationSupportDirectory();
-  return PersistCookieJar(
-    storage: FileStorage(path.join(dir.path, 'cookies')),
-  );
+  return PersistCookieJar(storage: FileStorage(path.join(dir.path, 'cookies')));
 }
 
 @Riverpod(keepAlive: true)
@@ -35,10 +33,12 @@ Map<String, Server> defaultServers(Ref ref) {
 Future<Map<String, Server>> provideDefaultServers() async {
   final json = await rootBundle.loadString('assets/servers.json');
   final servers = jsonDecode(json) as List;
-  return Map.fromEntries(servers.map((it) {
-    final value = Server.fromJson(it);
-    return MapEntry(value.key, value);
-  }));
+  return Map.fromEntries(
+    servers.map((it) {
+      final value = Server.fromJson(it);
+      return MapEntry(value.key, value);
+    }),
+  );
 }
 
 @riverpod

@@ -23,9 +23,9 @@ class BooruOnRailsJsonParser extends BooruParser {
 
   @override
   List<BooruParserType> get type => [
-        BooruParserType.search,
-        BooruParserType.suggestion,
-      ];
+    BooruParserType.search,
+    BooruParserType.suggestion,
+  ];
 
   @override
   bool canParsePage(Response res) {
@@ -49,11 +49,21 @@ class BooruOnRailsJsonParser extends BooruParser {
           pick(post, 'representations', 'large').asStringOrNull() ?? '';
       final previewFile =
           pick(post, 'representations', 'thumb').asStringOrNull() ?? '';
-      final tags = pick(post, 'tags').asStringList();
+      // tag names contain spaces, the app treats tags as space separated
+      final tags = pick(
+        post,
+        'tags',
+      ).asStringList().map((it) => it.replaceAll(' ', '_')).toList();
       final width = pick(post, 'width').asIntOrNull() ?? -1;
       final height = pick(post, 'height').asIntOrNull() ?? -1;
       final rating = tags.where(
-          (tag) => tag == 'explicit' || tag == 'safe' || tag == 'questionable');
+        (tag) => const {
+          'safe',
+          'suggestive',
+          'questionable',
+          'explicit',
+        }.contains(tag),
+      );
       final source = pick(post, 'source_url').asStringOrNull() ?? '';
       final score = pick(post, 'score').asIntOrNull() ?? 0;
 
@@ -101,7 +111,7 @@ class BooruOnRailsJsonParser extends BooruParser {
       final tag = pick(entry, 'name').asStringOrNull() ?? '';
       final postCount = pick(entry, 'images').asIntOrNull() ?? 0;
       if (postCount > 0 && tag.isNotEmpty) {
-        result.add(BooruUtil.decodeTag(tag));
+        result.add(BooruUtil.decodeTag(tag).replaceAll(' ', '_'));
       }
     }
 

@@ -1,5 +1,7 @@
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
+import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
@@ -9,6 +11,7 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/blur_backdrop.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
+import 'package:boorusphere/presentation/widgets/nsfw_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -23,8 +26,9 @@ class HomeSearchBar extends HookConsumerWidget {
     final searchBar = ref.watch(searchBarControllerProvider);
     final delta = useState([0.0, 0.0]);
     final collapsed = !searchBar.isOpen && delta.value.first > 0;
-    final isBlurAllowed =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.blur));
+    final isBlurAllowed = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.blur),
+    );
     final onScrolling = useCallback(() {
       final position = scrollController.position;
       final threshold = innerHeight;
@@ -71,14 +75,14 @@ class HomeSearchBar extends HookConsumerWidget {
         blur: isBlurAllowed,
         child: Container(
           decoration: BoxDecoration(
-            color: context.theme.scaffoldBackgroundColor.withOpacity(
-              context.isLightThemed
+            color: context.theme.scaffoldBackgroundColor.withValues(
+              alpha: context.isLightThemed
                   ? isBlurAllowed
-                      ? 0.7
-                      : 0.92
+                        ? 0.7
+                        : 0.92
                   : isBlurAllowed
-                      ? 0.85
-                      : 0.97,
+                  ? 0.85
+                  : 0.97,
             ),
             border: Border(
               top: BorderSide(color: context.colorScheme.outlineVariant),
@@ -94,7 +98,7 @@ class HomeSearchBar extends HookConsumerWidget {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(collapsed ? 0 : 0.2),
+                    color: Colors.grey.withValues(alpha: collapsed ? 0 : 0.2),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
                   margin: collapsed
@@ -147,8 +151,9 @@ class _SearchField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchBar = ref.watch(searchBarControllerProvider);
-    final imeIncognito =
-        ref.watch(uiSettingStateProvider.select((it) => it.imeIncognito));
+    final imeIncognito = ref.watch(
+      uiSettingStateProvider.select((it) => it.imeIncognito),
+    );
     final session = ref.watch(searchSessionProvider);
     final server = ref.watch(serverStateProvider).getById(session.serverId);
 
@@ -175,17 +180,27 @@ class _SearchField extends HookConsumerWidget {
   }
 }
 
-class _OptionBar extends StatelessWidget {
+class _OptionBar extends ConsumerWidget {
   const _OptionBar();
 
   @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(18, 11, 18, 0),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 11, 18, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _RatingButton(),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: nsfw
+                ? const _RatingButton()
+                : ActionChip(
+                    avatar: const Icon(Icons.shield_rounded, size: 16),
+                    label: Text(context.t.settings.safeMode),
+                    onPressed: () => setNsfwEnabled(context, ref, true),
+                  ),
+          ),
         ],
       ),
     );
@@ -208,18 +223,20 @@ class _RatingButton extends ConsumerWidget {
           title: Text(context.t.rating.title),
           icon: const Icon(Icons.star),
           contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: BooruRating.values
-                .map((e) => RadioListTile(
+          content: RadioGroup<BooruRating>(
+            groupValue: current,
+            onChanged: (x) => context.navigator.pop(x),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: BooruRating.values
+                  .map(
+                    (e) => RadioListTile(
                       value: e,
-                      groupValue: current,
                       title: Text(rateDesc(context, e)),
-                      onChanged: (x) {
-                        context.navigator.pop(x);
-                      },
-                    ))
-                .toList(),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         );
       },
@@ -228,8 +245,9 @@ class _RatingButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rating =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+    final rating = ref.watch(
+      serverSettingStateProvider.select((it) => it.searchRating),
+    );
     final label = '${context.t.rating.title}: ${rateDesc(context, rating)}';
 
     return TextButton(
@@ -260,11 +278,7 @@ class _RatingButton extends ConsumerWidget {
 }
 
 class _Button extends StatelessWidget {
-  const _Button({
-    this.collapsed = false,
-    required this.onTap,
-    this.child,
-  });
+  const _Button({this.collapsed = false, required this.onTap, this.child});
 
   final bool collapsed;
   final void Function() onTap;
@@ -309,19 +323,12 @@ class _LeadingButton extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (child, animator) {
-          final animation = Tween<double>(
-            begin: 0,
-            end: 1,
-          ).animate(CurvedAnimation(
-            parent: animator,
-            curve: Curves.easeInOutCubic,
-          ));
+          final animation = Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(parent: animator, curve: Curves.easeInOutCubic),
+          );
           return RotationTransition(
             turns: animation,
-            child: ScaleTransition(
-              scale: animation,
-              child: child,
-            ),
+            child: ScaleTransition(scale: animation, child: child),
           );
         },
         child: searchBar.isOpen
@@ -339,8 +346,7 @@ class _LeadingButton extends ConsumerWidget {
 class _RatingIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rating =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+    final rating = ref.watch(effectiveRatingProvider);
 
     String letter = 's';
     switch (rating) {
@@ -375,8 +381,10 @@ class _RatingIndicator extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         padding: const EdgeInsets.all(4),
-        child: Text(letter,
-            style: const TextStyle(fontSize: 10, color: Colors.white)),
+        child: Text(
+          letter,
+          style: const TextStyle(fontSize: 10, color: Colors.white),
+        ),
       ),
     );
   }
@@ -394,9 +402,11 @@ class _TrailingButton extends ConsumerWidget {
     final grid = ref.watch(uiSettingStateProvider.select((ui) => ui.grid));
 
     backToTop() {
-      scrollController?.animateTo(0,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeInOutCubic);
+      scrollController?.animateTo(
+        0,
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeInOutCubic,
+      );
     }
 
     return _Button(
@@ -410,19 +420,12 @@ class _TrailingButton extends ConsumerWidget {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, animator) {
-            final animation = Tween<double>(
-              begin: 0,
-              end: 1,
-            ).animate(CurvedAnimation(
-              parent: animator,
-              curve: Curves.easeInOutCubic,
-            ));
+            final animation = Tween<double>(begin: 0, end: 1).animate(
+              CurvedAnimation(parent: animator, curve: Curves.easeInOutCubic),
+            );
             return RotationTransition(
               turns: animation,
-              child: ScaleTransition(
-                scale: animation,
-                child: child,
-              ),
+              child: ScaleTransition(scale: animation, child: child),
             );
           },
           child: collapsed

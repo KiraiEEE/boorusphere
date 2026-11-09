@@ -41,8 +41,7 @@ class AppUpdater {
   }
 
   Future<void> clear() async {
-    final ids =
-        await ref.read(downloadBackendProvider).removeBySuffix('.apk');
+    final ids = await ref.read(downloadBackendProvider).removeBySuffix('.apk');
     for (final taskId in ids) {
       await ref.read(downloadEntryStateProvider.notifier).remove(taskId);
     }
@@ -61,8 +60,9 @@ class AppUpdater {
     await clear();
     final fileName = _fileNameOf(version);
     final url = '${AppVersionRepo.gitUrl}/releases/download/$version/$fileName';
-    final newId =
-        await ref.read(downloaderProvider).download(Post.appReserved, url: url);
+    final newId = await ref
+        .read(downloaderProvider)
+        .download(Post.appReserved, url: url);
 
     if (newId != null) {
       id = newId;

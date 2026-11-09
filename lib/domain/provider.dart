@@ -62,10 +62,7 @@ ImageboardRepo imageboardRepo(Ref ref, Server server) {
 
 @riverpod
 ChangelogRepo changelogRepo(Ref ref) {
-  return AppChangelogRepo(
-    bundle: rootBundle,
-    client: ref.watch(dioProvider),
-  );
+  return AppChangelogRepo(bundle: rootBundle, client: ref.watch(dioProvider));
 }
 
 @riverpod

@@ -30,7 +30,8 @@ class _AndroidStorage implements PlatformStorage {
 class _DesktopStorage implements PlatformStorage {
   @override
   Future<String> downloadPath() async {
-    final dir = await getDownloadsDirectory() ??
+    final dir =
+        await getDownloadsDirectory() ??
         await getApplicationDocumentsDirectory();
     return dir.path;
   }

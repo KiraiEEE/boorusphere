@@ -67,6 +67,15 @@ abstract class Server with _$Server {
       tags += ' $rate';
     }
 
+    if (ratingDialect == RatingDialect.booruOnRails) {
+      // booru-on-rails tags contain spaces and are separated by commas
+      tags = tags
+          .trim()
+          .split(RegExp(r'\s+'))
+          .map((it) => it.replaceAll('_', ' '))
+          .join(',');
+    }
+
     tags = Uri.encodeComponent(tags.trim());
 
     final url = '$apiAddress/$searchUrl'
@@ -80,18 +89,29 @@ abstract class Server with _$Server {
   String suggestionUrlsOf(String query) {
     final url = '$apiAddress/$tagSuggestionUrl'
         .replaceAll('{post-limit}', '$tagSuggestionLimit')
-        .replaceAll('{tag-limit}', '$tagSuggestionLimit');
+        .replaceAll('{tag-limit}', '$tagSuggestionLimit')
+        // a bare "%" wildcard would merge with the query into an escape
+        // sequence (e.g. "%ca" from "cat"), so send it encoded
+        .replaceAll('%{tag-part}%', '%25{tag-part}%25');
 
-    final encq = Uri.encodeComponent(query);
+    final encq = Uri.encodeComponent(
+      ratingDialect == RatingDialect.booruOnRails
+          ? query.replaceAll('_', ' ')
+          : query,
+    );
     if (!canSuggestTags) {
       throw Exception('no suggestion config for server $name');
     }
 
     if (query.isEmpty) {
       if (url.contains('name_pattern=')) {
-        return withAuth(url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), ''));
+        return withAuth(
+          url.replaceAll(RegExp(r'(%25|[*%])*{tag-part}(%25|[*%])*'), ''),
+        );
       }
-      return withAuth(url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), '*'));
+      return withAuth(
+        url.replaceAll(RegExp(r'(%25|[*%])*{tag-part}(%25|[*%])*'), '*'),
+      );
     }
     return withAuth(url.replaceAll('{tag-part}', encq));
   }
@@ -151,33 +171,32 @@ enum RatingDialect {
   String tagOf(BooruRating rating) {
     return switch (this) {
       RatingDialect.legacy => switch (rating) {
-          BooruRating.safe => 'rating:safe',
-          BooruRating.sensitive ||
-          BooruRating.questionable =>
-            'rating:questionable',
-          BooruRating.explicit => 'rating:explicit',
-          BooruRating.all => '',
-        },
+        BooruRating.safe => 'rating:safe',
+        BooruRating.sensitive ||
+        BooruRating.questionable => 'rating:questionable',
+        BooruRating.explicit => 'rating:explicit',
+        BooruRating.all => '',
+      },
       RatingDialect.modern => switch (rating) {
-          BooruRating.safe => 'rating:general',
-          BooruRating.sensitive => 'rating:sensitive',
-          BooruRating.questionable => 'rating:questionable',
-          BooruRating.explicit => 'rating:explicit',
-          BooruRating.all => '',
-        },
+        BooruRating.safe => 'rating:general',
+        BooruRating.sensitive => 'rating:sensitive',
+        BooruRating.questionable => 'rating:questionable',
+        BooruRating.explicit => 'rating:explicit',
+        BooruRating.all => '',
+      },
       RatingDialect.szurubooru => switch (rating) {
-          BooruRating.safe => 'safety:safe',
-          BooruRating.sensitive || BooruRating.questionable => 'safety:sketchy',
-          BooruRating.explicit => 'safety:unsafe',
-          BooruRating.all => '',
-        },
+        BooruRating.safe => 'safety:safe',
+        BooruRating.sensitive || BooruRating.questionable => 'safety:sketchy',
+        BooruRating.explicit => 'safety:unsafe',
+        BooruRating.all => '',
+      },
       RatingDialect.booruOnRails => switch (rating) {
-          BooruRating.safe => 'safe',
-          BooruRating.sensitive => 'suggestive',
-          BooruRating.questionable => 'questionable',
-          BooruRating.explicit => 'explicit',
-          BooruRating.all => '',
-        },
+        BooruRating.safe => 'safe',
+        BooruRating.sensitive => 'suggestive',
+        BooruRating.questionable => 'questionable',
+        BooruRating.explicit => 'explicit',
+        BooruRating.all => '',
+      },
     };
   }
 }

@@ -9,8 +9,10 @@ class TagQuery {
   const TagQuery._(this.server, this._local);
 
   factory TagQuery.split(String query, {int? limit}) {
-    final words =
-        query.trim().split(RegExp(r'\s+')).where((it) => it.isNotEmpty);
+    final words = query
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((it) => it.isNotEmpty);
     if (limit == null || limit <= 0) {
       return TagQuery._(words.join(' '), null);
     }
@@ -36,7 +38,9 @@ class TagQuery {
 
     return TagQuery._(
       server.join(' '),
-      local.isEmpty ? null : BlacklistRule.parse(local.join(' ')),
+      local.isEmpty
+          ? null
+          : BlacklistRule.parse(local.join(' '), allowOnlyNegation: true),
     );
   }
 
@@ -82,8 +86,10 @@ class TagQuery {
         !RegExp('more than .* tags', caseSensitive: false).hasMatch(text)) {
       return null;
     }
-    final match = RegExp(r'more than (\w+) tags', caseSensitive: false)
-        .firstMatch(text);
+    final match = RegExp(
+      r'more than (\w+) tags',
+      caseSensitive: false,
+    ).firstMatch(text);
     final value = match?.group(1)?.toLowerCase();
     if (value == null) return null;
     return int.tryParse(value) ?? _words[value];

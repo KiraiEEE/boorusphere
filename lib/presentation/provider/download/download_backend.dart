@@ -16,8 +16,9 @@ part 'download_backend.g.dart';
 
 @Riverpod(keepAlive: true)
 DownloadBackend downloadBackend(Ref ref) {
-  final backend =
-      Platform.isAndroid ? AndroidDownloadBackend() : DioDownloadBackend();
+  final backend = Platform.isAndroid
+      ? AndroidDownloadBackend()
+      : DioDownloadBackend();
   ref.onDispose(backend.dispose);
   return backend;
 }
@@ -55,12 +56,14 @@ class AndroidDownloadBackend extends DownloadBackend {
     FlutterDownloader.registerCallback(_onProgressUpdated);
     _receiver.listen((data) {
       final status = DownloadTaskStatus.fromInt(data[1]);
-      _controller.add(DownloadProgress(
-        id: data[0],
-        status: status.toDownloadStatus(),
-        progress: data[2],
-        timestamp: DateTime.now().millisecondsSinceEpoch,
-      ));
+      _controller.add(
+        DownloadProgress(
+          id: data[0],
+          status: status.toDownloadStatus(),
+          progress: data[2],
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
     });
   }
 
@@ -163,12 +166,14 @@ class DioDownloadBackend extends DownloadBackend {
 
   void _emit(String id, DownloadStatus status, int progress) {
     if (_controller.isClosed) return;
-    _controller.add(DownloadProgress(
-      id: id,
-      status: status,
-      progress: progress,
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-    ));
+    _controller.add(
+      DownloadProgress(
+        id: id,
+        status: status,
+        progress: progress,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
   }
 
   String _newId() {

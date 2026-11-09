@@ -75,8 +75,9 @@ class _PostVideoContent extends HookConsumerWidget {
         contentSettings.blurExplicit && !contentSettings.blurTimelineOnly;
     final shouldBlur = post.rating.isExplicit && shouldBlurExplicit;
     final isBlur = useState(shouldBlur);
-    final blurNoticeAnimator =
-        useAnimationController(duration: kThemeChangeDuration);
+    final blurNoticeAnimator = useAnimationController(
+      duration: kThemeChangeDuration,
+    );
     final showOverlay = useState(true);
     final markMayNeedRebuild = useMarkMayNeedRebuild();
     final isPlaying = useState(true);
@@ -247,9 +248,7 @@ class _ToolboxOverlay extends ConsumerWidget {
                     .toggleVideoPlayerMute();
                 await source.controller?.setVolume(mute ? 0 : 1);
               },
-              icon: Icon(
-                isMuted ? Icons.volume_mute : Icons.volume_up,
-              ),
+              icon: Icon(isMuted ? Icons.volume_mute : Icons.volume_up),
             ),
             PostDetailsButton(post: post),
             IconButton(
@@ -276,10 +275,7 @@ class _ToolboxOverlay extends ConsumerWidget {
 }
 
 class _PlayPauseOverlay extends StatelessWidget {
-  const _PlayPauseOverlay({
-    required this.isPlaying,
-    required this.onPressed,
-  });
+  const _PlayPauseOverlay({required this.isPlaying, required this.onPressed});
 
   final bool isPlaying;
   final void Function()? onPressed;

@@ -94,8 +94,9 @@ class NsfwSwitchCard extends ConsumerWidget {
                       children: [
                         Text(
                           context.t.nsfw.title,
-                          style: context.theme.textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                          style: context.theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         AnimatedSwitcher(
@@ -103,8 +104,9 @@ class NsfwSwitchCard extends ConsumerWidget {
                           child: Text(
                             nsfw ? context.t.nsfw.on : context.t.nsfw.off,
                             key: ValueKey(nsfw),
-                            style: context.theme.textTheme.bodySmall
-                                ?.copyWith(color: cs.onSurfaceVariant),
+                            style: context.theme.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ),
                       ],

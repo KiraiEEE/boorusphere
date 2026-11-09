@@ -70,8 +70,10 @@ class BooruRepo implements ImageboardRepo {
 
   @override
   Future<Set<String>> getSuggestion(String word) async {
-    var parser = parsers.firstWhere((x) => x.id == server.suggestionParserId,
-        orElse: NoParser.new);
+    var parser = parsers.firstWhere(
+      (x) => x.id == server.suggestionParserId,
+      orElse: NoParser.new,
+    );
 
     final suggestionUrl = server.suggestionUrlsOf(word);
     final res = await _request(suggestionUrl, parser);
@@ -81,14 +83,19 @@ class BooruRepo implements ImageboardRepo {
       return parser.parseSuggestion(server, res).toSet();
     }
 
-    parser = parsers.firstWhere((it) => it.canParseSuggestion(res),
-        orElse: NoParser.new);
+    parser = parsers.firstWhere(
+      (it) => it.canParseSuggestion(res),
+      orElse: NoParser.new,
+    );
 
     if (parser.id.isNotEmpty) {
       _log.i(
-          'getSuggestion(${server.name}): parser resolved, now using ${parser.id}_parser');
+        'getSuggestion(${server.name}): parser resolved, now using ${parser.id}_parser',
+      );
       await serverState.edit(
-          server, server.copyWith(suggestionParserId: parser.id));
+        server,
+        server.copyWith(suggestionParserId: parser.id),
+      );
     }
 
     return parser.parseSuggestion(server, res).toSet();
@@ -98,22 +105,28 @@ class BooruRepo implements ImageboardRepo {
   Future<Set<Post>> getPage(PageOption option, int index) async {
     final query = TagQuery.split(option.query, limit: _tagLimit);
     try {
-      final posts =
-          await _fetchPage(option.copyWith(query: query.server), index);
+      final posts = await _fetchPage(
+        option.copyWith(query: query.server),
+        index,
+      );
       return query.hasLocalFilter ? posts.where(query.accepts).toSet() : posts;
     } on _TagLimitExceeded catch (e) {
       final known = _tagLimits[server.id];
       if (known != null && known <= e.limit) rethrow;
-      _log.i('getPage(${server.name}): tag limit is ${e.limit}, '
-          'filtering the rest locally');
+      _log.i(
+        'getPage(${server.name}): tag limit is ${e.limit}, '
+        'filtering the rest locally',
+      );
       _tagLimits[server.id] = e.limit;
       return getPage(option, index);
     }
   }
 
   Future<Set<Post>> _fetchPage(PageOption option, int index) async {
-    var parser = parsers.firstWhere((x) => x.id == server.searchParserId,
-        orElse: NoParser.new);
+    var parser = parsers.firstWhere(
+      (x) => x.id == server.searchParserId,
+      orElse: NoParser.new,
+    );
 
     final searchUrl = server.searchUrlOf(option, page: index);
     final res = await _request(searchUrl, parser);
@@ -123,14 +136,19 @@ class BooruRepo implements ImageboardRepo {
       return parser.parsePage(server, res).toSet();
     }
 
-    parser =
-        parsers.firstWhere((it) => it.canParsePage(res), orElse: NoParser.new);
+    parser = parsers.firstWhere(
+      (it) => it.canParsePage(res),
+      orElse: NoParser.new,
+    );
 
     if (parser.id.isNotEmpty) {
       _log.i(
-          'getPage(${server.name}): parser resolved, now using ${parser.id}_parser');
+        'getPage(${server.name}): parser resolved, now using ${parser.id}_parser',
+      );
       await serverState.edit(
-          server, server.copyWith(searchParserId: parser.id));
+        server,
+        server.copyWith(searchParserId: parser.id),
+      );
     }
 
     return parser.parsePage(server, res).toSet();

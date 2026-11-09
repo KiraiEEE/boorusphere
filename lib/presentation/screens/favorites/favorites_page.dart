@@ -11,6 +11,7 @@ import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:boorusphere/presentation/widgets/notice_card.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -24,14 +25,16 @@ class FavoritesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favoritePostState = ref.watch(favoritePostStateProvider);
-    final savedServerId =
-        ref.read(serverSettingStateProvider.select((it) => it.lastActiveId));
+    final savedServerId = ref.read(
+      serverSettingStateProvider.select((it) => it.lastActiveId),
+    );
     final session = this.session ?? SearchSession(serverId: savedServerId);
     return ProviderScope(
       overrides: [
         searchSessionProvider.overrideWith((ref) => session),
-        timelineControllerProvider.overrideWith((ref) =>
-            TimelineController(scrollController: AutoScrollController())),
+        timelineControllerProvider.overrideWith(
+          (ref) => TimelineController(scrollController: AutoScrollController()),
+        ),
       ],
       child: favoritePostState.isNotEmpty
           ? _Pager(favoritePostState)
@@ -44,9 +47,8 @@ class _EmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.t.favorites.title),
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.favorites.title)),
       body: SafeArea(
         child: Column(
           children: [
@@ -74,9 +76,7 @@ class _Pager extends ConsumerWidget {
     final servers = ref.watch(serverStateProvider);
 
     final pages = posts
-        .groupListsBy(
-          (e) => servers.getById(e.serverId, or: Server.empty),
-        )
+        .groupListsBy((e) => servers.getById(e.serverId, or: Server.empty))
         .entries
         .where((it) => it.key != Server.empty)
         .sortedBy((it) => it.key.id);
@@ -85,9 +85,7 @@ class _Pager extends ConsumerWidget {
       length: pages.length,
       child: Scaffold(
         extendBody: true,
-        appBar: AppBar(
-          title: Text(context.t.favorites.title),
-        ),
+        appBar: AppBar(title: Text(context.t.favorites.title)),
         body: TabBarView(
           children: [
             for (final page in pages)

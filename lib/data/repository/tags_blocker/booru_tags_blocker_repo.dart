@@ -22,7 +22,10 @@ class BooruTagsBlockerRepo implements TagsBlockerRepo {
 
   @override
   Future<void> push(BooruTag value) async {
-    final name = value.name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    final name = value.name.trim().toLowerCase().replaceAll(
+      RegExp(r'\s+'),
+      ' ',
+    );
     final tag = value.copyWith(name: name);
     if (tag.name.isNotEmpty && !box.values.contains(tag)) {
       await box.add(tag);

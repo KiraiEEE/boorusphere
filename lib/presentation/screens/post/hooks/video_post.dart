@@ -49,11 +49,7 @@ VideoPostSource useVideoPostSource(
 }
 
 class _VideoPostHook extends Hook<VideoPostSource> {
-  const _VideoPostHook(
-    this.ref, {
-    required this.post,
-    required this.active,
-  });
+  const _VideoPostHook(this.ref, {required this.post, required this.active});
 
   final WidgetRef ref;
   final Post post;
@@ -76,9 +72,10 @@ class _VideoPostState extends HookState<VideoPostSource, _VideoPostHook> {
         source = source.copyWith(progress: event);
       });
     } else if (event is FileInfo) {
-      final controller = VideoPlayerController.file(event.file,
-          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))
-        ..setLooping(true);
+      final controller = VideoPlayerController.file(
+        event.file,
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      )..setLooping(true);
       final size = event.file.statSync().size;
       final prog = DownloadProgress(event.originalUrl, size, size);
 
@@ -93,14 +90,19 @@ class _VideoPostState extends HookState<VideoPostSource, _VideoPostHook> {
 
     final cache = hook.ref.read(cacheManagerProvider);
     final cookieJar = hook.ref.read(cookieJarProvider);
-    final cookies =
-        await cookieJar.loadForRequest(hook.post.content.url.toUri());
-    final headers =
-        hook.ref.read(postHeadersFactoryProvider(hook.post, cookies: cookies));
+    final cookies = await cookieJar.loadForRequest(
+      hook.post.content.url.toUri(),
+    );
+    final headers = hook.ref.read(
+      postHeadersFactoryProvider(hook.post, cookies: cookies),
+    );
 
     cache
-        .getFileStream(hook.post.content.url,
-            headers: headers, withProgress: true)
+        .getFileStream(
+          hook.post.content.url,
+          headers: headers,
+          withProgress: true,
+        )
         .listen(onFileStream);
   }
 

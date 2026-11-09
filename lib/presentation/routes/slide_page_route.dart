@@ -53,8 +53,10 @@ class SlidePageRoute<T> extends PageRoute<T> {
       : reverseDuration;
 
   static final _slideIn = Tween(begin: const Offset(0.08, 0), end: Offset.zero);
-  static final _slideOut =
-      Tween(begin: Offset.zero, end: const Offset(-0.06, 0));
+  static final _slideOut = Tween(
+    begin: Offset.zero,
+    end: const Offset(-0.06, 0),
+  );
 
   @override
   Widget buildTransitions(
@@ -65,7 +67,12 @@ class SlidePageRoute<T> extends PageRoute<T> {
   ) {
     if (_useSystemTransition) {
       return _systemTransition.buildTransitions(
-          this, context, animation, secondaryAnimation, child);
+        this,
+        context,
+        animation,
+        secondaryAnimation,
+        child,
+      );
     }
 
     // Material 3 "emphasized" motion: quick start, long gentle settle

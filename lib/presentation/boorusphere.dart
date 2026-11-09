@@ -27,11 +27,11 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+  };
 }
 
 class Boorusphere extends HookConsumerWidget {
@@ -55,10 +55,12 @@ class Boorusphere extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(uiSettingStateProvider.select((ui) => ui.locale));
-    final theme =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.themeMode));
-    final isMidnight =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.midnightMode));
+    final theme = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.themeMode),
+    );
+    final isMidnight = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.midnightMode),
+    );
     final cookieJar = ref.watch(cookieJarProvider);
     final router = useMemoized(AppRouter.new);
     final initialized = useState(false);
@@ -83,8 +85,9 @@ class Boorusphere extends HookConsumerWidget {
     }, [locale]);
 
     useEffect(() {
-      final sub =
-          ref.read(downloadBackendProvider).progress.listen((progress) async {
+      final sub = ref.read(downloadBackendProvider).progress.listen((
+        progress,
+      ) async {
         if (progress.status.isDownloaded) {
           await ref.read(sharedStorageHandleProvider).rescan();
         }
@@ -115,9 +118,7 @@ class Boorusphere extends HookConsumerWidget {
         themeAnimationCurve: Curves.easeOutCubic,
         scrollBehavior: const _AppScrollBehavior(),
         routerConfig: router.config(
-          navigatorObservers: () => [
-            AppRouteObserver(ref),
-          ],
+          navigatorObservers: () => [AppRouteObserver(ref)],
         ),
         locale: TranslationProvider.of(context).locale.digestedFlutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,

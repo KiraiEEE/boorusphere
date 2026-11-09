@@ -6,6 +6,7 @@ import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_option.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_result.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -17,7 +18,8 @@ class DataBackupPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.dataBackup.title)),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.dataBackup.title)),
       body: const SafeArea(child: _Content()),
     );
   }
@@ -46,7 +48,7 @@ class _Content extends HookConsumerWidget {
                 context.navigator.pop(true);
               },
               child: Text(context.t.restore),
-            )
+            ),
           ],
         );
       },
@@ -67,20 +69,26 @@ class _Content extends HookConsumerWidget {
             ),
           );
         case ImportedBackupResult():
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.restore.success),
-            duration: const Duration(seconds: 1),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.restore.success),
+              duration: const Duration(seconds: 1),
+            ),
+          );
         case ExportedBackupResult(:final path):
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.backup.success(dest: path)),
-            duration: const Duration(seconds: 2),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.backup.success(dest: path)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         case ErrorBackupResult():
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.restore.invalid),
-            duration: const Duration(seconds: 1),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.restore.invalid),
+              duration: const Duration(seconds: 1),
+            ),
+          );
         default:
       }
     });
@@ -99,9 +107,11 @@ class _Content extends HookConsumerWidget {
               builder: (context) => _BackupSelectionDialog(),
             );
             if (result != null) {
-              unawaited(ref
-                  .read(dataBackupStateProvider.notifier)
-                  .backup(option: result));
+              unawaited(
+                ref
+                    .read(dataBackupStateProvider.notifier)
+                    .backup(option: result),
+              );
             }
           },
         ),
@@ -173,24 +183,27 @@ class _BackupSelectionDialog extends HookWidget {
             title: Text(context.t.searchHistory),
             value: option.value.searchHistory,
             onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(searchHistory: newValue ?? true);
+              option.value = option.value.copyWith(
+                searchHistory: newValue ?? true,
+              );
             },
           ),
           CheckboxListTile(
             title: Text(context.t.tagsBlocker.title),
             value: option.value.blockedTags,
             onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(blockedTags: newValue ?? true);
+              option.value = option.value.copyWith(
+                blockedTags: newValue ?? true,
+              );
             },
           ),
           CheckboxListTile(
             title: Text(context.t.favorites.title),
             value: option.value.favoritePost,
             onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(favoritePost: newValue ?? true);
+              option.value = option.value.copyWith(
+                favoritePost: newValue ?? true,
+              );
             },
           ),
           CheckboxListTile(
@@ -217,7 +230,7 @@ class _BackupSelectionDialog extends HookWidget {
                 }
               : null,
           child: Text(context.t.backup),
-        )
+        ),
       ],
     );
   }

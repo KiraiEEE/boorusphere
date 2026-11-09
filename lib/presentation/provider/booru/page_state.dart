@@ -26,8 +26,9 @@ part 'page_state.g.dart';
 @riverpod
 BooruRating effectiveRating(Ref ref) {
   final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
-  final rating =
-      ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+  final rating = ref.watch(
+    serverSettingStateProvider.select((it) => it.searchRating),
+  );
   return nsfw ? rating : BooruRating.safe;
 }
 
@@ -51,14 +52,14 @@ class PageState extends _$PageState {
 
     // Re-filter what we already have when the rules change, no refetch needed
     ref.listen(blacklistProvider(session.serverId), (_, __) => _refilter());
-    ref.listen(
-      contentSettingStateProvider.select((it) => it.nsfw),
-      (prev, next) {
-        if (prev == next) return;
-        // ratings are applied server-side too, so start fresh
-        unawaited(update((it) => it.copyWith(clear: true)));
-      },
-    );
+    ref.listen(contentSettingStateProvider.select((it) => it.nsfw), (
+      prev,
+      next,
+    ) {
+      if (prev == next) return;
+      // ratings are applied server-side too, so start fresh
+      unawaited(update((it) => it.copyWith(clear: true)));
+    });
 
     return const FetchResult.idle(PageData());
   }
@@ -89,8 +90,11 @@ class PageState extends _$PageState {
     final res = _filtered();
     final data = state.data.copyWith(posts: res.visible, hidden: res.hidden);
     state = switch (state) {
-      ErrorFetchResult(:final error, :final stackTrace) =>
-        FetchResult.error(data, error: error, stackTrace: stackTrace),
+      ErrorFetchResult(:final error, :final stackTrace) => FetchResult.error(
+        data,
+        error: error,
+        stackTrace: stackTrace,
+      ),
       LoadingFetchResult() => FetchResult.loading(data),
       IdleFetchResult() => FetchResult.idle(data),
       DataFetchResult() => FetchResult.data(data),
@@ -143,11 +147,13 @@ class PageState extends _$PageState {
     // ignore results of a superseded request (e.g. rapid refresh)
     final generation = ++_generation;
     final initial = _filtered();
-    state = FetchResult.loading(state.data.copyWith(
-      posts: initial.visible,
-      hidden: initial.hidden,
-      option: option,
-    ));
+    state = FetchResult.loading(
+      state.data.copyWith(
+        posts: initial.visible,
+        hidden: initial.hidden,
+        option: option,
+      ),
+    );
 
     try {
       final repo = ref.read(imageboardRepoProvider(server));

@@ -50,10 +50,7 @@ class PostToolbox extends HookConsumerWidget {
 }
 
 class PostDetailsButton extends ConsumerWidget {
-  const PostDetailsButton({
-    super.key,
-    required this.post,
-  });
+  const PostDetailsButton({super.key, required this.post});
 
   final Post post;
 
@@ -63,17 +60,15 @@ class PostDetailsButton extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.info),
-      onPressed: () => context.router.push(PostDetailsRoute(
-          post: post, session: ref.read(searchSessionProvider))),
+      onPressed: () => context.router.push(
+        PostDetailsRoute(post: post, session: ref.read(searchSessionProvider)),
+      ),
     );
   }
 }
 
 class PostOpenLinkButton extends StatelessWidget {
-  const PostOpenLinkButton({
-    super.key,
-    required this.post,
-  });
+  const PostOpenLinkButton({super.key, required this.post});
 
   final Post post;
 
@@ -83,28 +78,31 @@ class PostOpenLinkButton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.link_outlined),
-      onPressed: () => launchUrlString(post.originalFile,
-          mode: LaunchMode.externalApplication),
+      onPressed: () => launchUrlString(
+        post.originalFile,
+        mode: LaunchMode.externalApplication,
+      ),
     );
   }
 }
 
 class PostFavoriteButton extends HookConsumerWidget {
-  const PostFavoriteButton({
-    super.key,
-    required this.post,
-  });
+  const PostFavoriteButton({super.key, required this.post});
 
   final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favorites = ref.watch(favoritePostStateProvider);
-    final animator =
-        useAnimationController(duration: const Duration(milliseconds: 300));
+    final animator = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
     final animation = useAnimation(
-        ColorTween(begin: Colors.white, end: Colors.pink.shade300)
-            .animate(animator));
+      ColorTween(
+        begin: Colors.white,
+        end: Colors.pink.shade300,
+      ).animate(animator),
+    );
     final isFav = favorites.contains(post);
     isFav ? animator.forward() : animator.reverse();
 
@@ -144,16 +142,17 @@ class PostDownloadButton extends HookConsumerWidget {
           value: pending.value
               ? null
               : progress.status.isDownloading
-                  ? progress.progress.ratio
-                  : 0,
+              ? progress.progress.ratio
+              : 0,
         ),
         IconButton(
           padding: const EdgeInsets.all(16),
           color: Colors.white,
-          icon: Icon(progress.status.isDownloaded
-              ? Icons.download_done
-              : Icons.download),
-          onPressed: pending.value ||
+          icon: Icon(
+            progress.status.isDownloaded ? Icons.download_done : Icons.download,
+          ),
+          onPressed:
+              pending.value ||
                   progress.status.isDownloaded ||
                   progress.status.isDownloading
               ? null

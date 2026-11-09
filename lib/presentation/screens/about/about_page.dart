@@ -10,6 +10,7 @@ import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,7 +26,8 @@ class AboutPage extends ConsumerWidget {
     final appVersions = ref.watch(appVersionsStateProvider);
 
     return Scaffold(
-      appBar: AppBar(),
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -44,8 +46,9 @@ class AboutPage extends ConsumerWidget {
               ),
               Text(
                 'Boorusphere',
-                style: context.theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w300),
+                style: context.theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w300,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -53,8 +56,9 @@ class AboutPage extends ConsumerWidget {
                   data: (data) {
                     return Text(
                       context.t.version(version: '${data.current} - $kAppArch'),
-                      style: context.theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w400),
+                      style: context.theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
                     );
                   },
                   orElse: SizedBox.shrink,
@@ -170,7 +174,8 @@ class _Downloader extends ConsumerWidget {
     final progress = ref.watch(appUpdateProgressProvider);
     final hasUpdateApk = progress.status.isDownloaded;
 
-    final showDownloadButton = progress.status.isCanceled ||
+    final showDownloadButton =
+        progress.status.isCanceled ||
         progress.status.isFailed ||
         progress.status.isEmpty;
 
@@ -192,8 +197,9 @@ class _Downloader extends ConsumerWidget {
         if (progress.status.isDownloading) ...[
           const SizedBox(width: 16),
           Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text('${progress.progress}%')),
+            padding: const EdgeInsets.all(8),
+            child: Text('${progress.progress}%'),
+          ),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -208,15 +214,11 @@ class _Downloader extends ConsumerWidget {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        context.colorScheme.primary.withOpacity(0),
-                        context.colorScheme.primary.withOpacity(0.5),
-                        context.colorScheme.primary.withOpacity(0),
+                        context.colorScheme.primary.withValues(alpha: 0),
+                        context.colorScheme.primary.withValues(alpha: 0.5),
+                        context.colorScheme.primary.withValues(alpha: 0),
                       ],
-                      stops: const <double>[
-                        0.35,
-                        0.5,
-                        0.65,
-                      ],
+                      stops: const <double>[0.35, 0.5, 0.65],
                     ),
                     period: const Duration(milliseconds: 700),
                     child: const LinearProgressIndicator(

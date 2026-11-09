@@ -19,7 +19,8 @@ class ContentSettingState extends _$ContentSettingState {
       // Users that already opted into non-safe ratings keep seeing them.
       nsfw: repo.get(
         Setting.contentNsfw,
-        or: repo.get(Setting.searchRating, or: BooruRating.safe) !=
+        or:
+            repo.get(Setting.searchRating, or: BooruRating.safe) !=
             BooruRating.safe,
       ),
       nsfwConfirmed: repo.get(Setting.contentNsfwConfirmed, or: false),

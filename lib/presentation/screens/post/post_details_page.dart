@@ -42,8 +42,9 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
     void search(Iterable<String> tags) {
       final newQuery = {...tags}.join(' ');
       if (newQuery.isEmpty) return;
-      context.router
-          .push(HomeRoute(session: session.copyWith(query: newQuery)));
+      context.router.push(
+        HomeRoute(session: session.copyWith(query: newQuery)),
+      );
     }
 
     void block(Iterable<String> tags) {
@@ -52,10 +53,12 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
       selected.value = [...selected.value.where((it) => !list.contains(it))];
       context.scaffoldMessenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(context.t.actionTag.blocked),
-          duration: const Duration(seconds: 2),
-        ));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(context.t.actionTag.blocked),
+            duration: const Duration(seconds: 2),
+          ),
+        );
     }
 
     Future<void> showTagActions(String tag) async {
@@ -131,7 +134,11 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
           bottom: false,
           child: ListView(
             padding: EdgeInsets.fromLTRB(
-                16, 12, 16, context.mediaQuery.padding.bottom + 104),
+              16,
+              12,
+              16,
+              context.mediaQuery.padding.bottom + 104,
+            ),
             children: [
               _InfoHeader(post: post),
               const SizedBox(height: 12),
@@ -154,8 +161,8 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                       ListTile(
                         title: Text(context.t.fileSample),
                         subtitle: FutureBuilder<PixelSize>(
-                          future: post.content.isPhoto &&
-                                  !post.sampleSize.hasPixels
+                          future:
+                              post.content.isPhoto && !post.sampleSize.hasPixels
                               ? ExtendedNetworkImageProvider(
                                   post.sampleFile,
                                   cache: true,
@@ -304,8 +311,9 @@ class _TagSelectionBar extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip:
-                        MaterialLocalizations.of(context).clearButtonTooltip,
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).clearButtonTooltip,
                     onPressed: onClear,
                     icon: const Icon(Icons.close_rounded),
                   ),
@@ -319,8 +327,9 @@ class _TagSelectionBar extends StatelessWidget {
                       child: Text(
                         '${selected.length}',
                         key: ValueKey(selected.length),
-                        style: context.theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: context.theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -410,14 +419,16 @@ class _TagsView extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   label,
-                  style: context.theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  style: context.theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '${tags.length}',
-                  style: context.theme.textTheme.labelMedium
-                      ?.copyWith(color: cs.onSurfaceVariant),
+                  style: context.theme.textTheme.labelMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
