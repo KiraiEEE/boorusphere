@@ -1,6 +1,6 @@
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'booru_rating.g.dart';
 
@@ -34,16 +34,27 @@ enum BooruRating {
 
   bool get isExplicit => this == BooruRating.explicit;
 
+  /// Anything that is not guaranteed to be safe for work
+  bool get isNsfw => this != BooruRating.safe;
+
+  /// Parse rating metadata from various booru vocabularies.
+  ///
+  /// Unknown values are treated as questionable so they never leak into
+  /// safe-mode results.
   static BooruRating parse(String metadata) {
-    switch (metadata) {
-      case 'sensitive':
-        return BooruRating.sensitive;
-      case 'explicit':
-      case 'e':
-        return BooruRating.explicit;
-      case 'safe':
+    switch (metadata.trim().toLowerCase()) {
+      case 'g':
+      case 'general':
       case 's':
+      case 'safe':
         return BooruRating.safe;
+      case 'sensitive':
+      case 'suggestive':
+        return BooruRating.sensitive;
+      case 'e':
+      case 'explicit':
+      case 'unsafe':
+        return BooruRating.explicit;
       default:
         return BooruRating.questionable;
     }

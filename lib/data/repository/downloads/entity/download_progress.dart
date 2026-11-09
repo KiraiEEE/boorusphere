@@ -1,13 +1,13 @@
 import 'package:boorusphere/data/repository/downloads/entity/download_status.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'download_progress.freezed.dart';
 part 'download_progress.g.dart';
 
 @freezed
-class DownloadProgress with _$DownloadProgress {
-  @HiveType(typeId: 10, adapterName: 'DownloadProgressAdapter')
+@HiveType(typeId: 10, adapterName: 'DownloadProgressAdapter')
+abstract class DownloadProgress with _$DownloadProgress {
   const factory DownloadProgress({
     @HiveField(0, defaultValue: '') @Default('') String id,
     @HiveField(1, defaultValue: DownloadStatus.empty)

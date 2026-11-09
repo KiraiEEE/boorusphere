@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'post.freezed.dart';
 part 'post.g.dart';
 
 @freezed
-class Post with _$Post {
-  @HiveType(typeId: 3, adapterName: 'PostAdapter')
+@HiveType(typeId: 3, adapterName: 'PostAdapter')
+abstract class Post with _$Post {
   const factory Post({
     @HiveField(0, defaultValue: -1) @Default(-1) int id,
     @HiveField(1, defaultValue: '') @Default('') String originalFile,

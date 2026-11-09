@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'booru_tag.freezed.dart';
 part 'booru_tag.g.dart';
 
 @freezed
-class BooruTag with _$BooruTag {
-  @HiveType(typeId: 6, adapterName: 'BooruTagAdapter')
+@HiveType(typeId: 6, adapterName: 'BooruTagAdapter')
+abstract class BooruTag with _$BooruTag {
   const factory BooruTag({
     @HiveField(0, defaultValue: '') @Default('') String serverId,
     @HiveField(1, defaultValue: '') @Default('') String name,

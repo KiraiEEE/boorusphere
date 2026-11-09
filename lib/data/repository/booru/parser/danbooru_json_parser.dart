@@ -70,12 +70,12 @@ class DanbooruJsonParser extends BooruParser {
             originalFile: BooruUtil.normalizeUrl(server, originalFile),
             sampleFile: BooruUtil.normalizeUrl(server, sampleFile),
             previewFile: BooruUtil.normalizeUrl(server, previewFile),
-            tags: tags,
+            tags: tags.map(BooruUtil.decodeTag).toList(),
             width: width,
             height: height,
             serverId: server.id,
             postUrl: postUrl,
-            rateValue: rating.isEmpty ? 'q' : rating,
+            rateValue: _normalizeRating(rating),
             source: source,
             tagsArtist: tagsArtist.map(BooruUtil.decodeTag).toList(),
             tagsCharacter: tagsCharacter.map(BooruUtil.decodeTag).toList(),
@@ -113,4 +113,14 @@ class DanbooruJsonParser extends BooruParser {
 
     return result;
   }
+}
+
+/// Danbooru ratings are g/s/q/e where "s" means sensitive, not safe.
+String _normalizeRating(String rating) {
+  return switch (rating) {
+    'g' => 'general',
+    's' => 'sensitive',
+    'e' => 'explicit',
+    _ => 'questionable',
+  };
 }

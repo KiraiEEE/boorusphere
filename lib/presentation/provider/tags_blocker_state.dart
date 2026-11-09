@@ -1,3 +1,4 @@
+import 'package:boorusphere/data/repository/tags_blocker/blacklist.dart';
 import 'package:boorusphere/data/repository/tags_blocker/entity/booru_tag.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -29,12 +30,28 @@ class TagsBlockerState extends _$TagsBlockerState {
 
   Future<void> pushAll({
     String serverId = '',
-    required List<String> tags,
+    required Iterable<String> tags,
   }) async {
     final repo = ref.read(tagsBlockerRepoProvider);
-    for (var tag in tags) {
+    for (final tag in tags) {
       await repo.push(BooruTag(serverId: serverId, name: tag));
     }
     state = repo.get();
   }
+
+  /// Re-add previously removed entries (used for undo)
+  Future<void> restore(Iterable<BooruTag> tags) async {
+    final repo = ref.read(tagsBlockerRepoProvider);
+    for (final tag in tags) {
+      await repo.push(tag);
+    }
+    state = repo.get();
+  }
+}
+
+/// Compiled blacklist for [serverId], recomputed only when rules change.
+@Riverpod(keepAlive: true)
+Blacklist blacklist(Ref ref, String serverId) {
+  final tags = ref.watch(tagsBlockerStateProvider).values;
+  return Blacklist.compile(tags, serverId: serverId);
 }

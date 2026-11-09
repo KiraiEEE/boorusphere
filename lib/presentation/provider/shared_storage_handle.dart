@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:boorusphere/pigeon/storage_util.pi.dart';
-import 'package:media_scanner/media_scanner.dart';
+import 'package:boorusphere/data/repository/storage/platform_storage.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,19 +8,21 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'shared_storage_handle.g.dart';
 
 @Riverpod(keepAlive: true)
-SharedStorageHandle sharedStorageHandle(SharedStorageHandleRef ref) {
+SharedStorageHandle sharedStorageHandle(Ref ref) {
   throw UnimplementedError();
 }
 
 Future<SharedStorageHandle> provideSharedStorageHandle() async {
-  final downloadPath = await StorageUtil().getDownloadPath();
-  return SharedStorageHandle(downloadPath: downloadPath);
+  final storage = PlatformStorage();
+  final downloadPath = await storage.downloadPath();
+  return SharedStorageHandle(downloadPath: downloadPath, storage: storage);
 }
 
 class SharedStorageHandle {
-  SharedStorageHandle({required this.downloadPath});
+  SharedStorageHandle({required this.downloadPath, required this.storage});
 
   final String downloadPath;
+  final PlatformStorage storage;
 
   String get path {
     return p.join(downloadPath, 'Boorusphere');
@@ -31,16 +32,21 @@ class SharedStorageHandle {
     return File(p.join(path, '.nomedia'));
   }
 
+  /// `.nomedia` only means something to Android's media scanner
+  bool get canHide => Platform.isAndroid;
+
   bool get isHidden {
-    return _nomedia.existsSync();
+    return canHide && _nomedia.existsSync();
   }
 
   Future<void> init() async {
-    await Permission.storage.request();
+    if (Platform.isAndroid) {
+      await Permission.storage.request();
+    }
     final dir = Directory(path);
     if (!dir.existsSync()) {
       try {
-        Directory(path).createSync();
+        dir.createSync(recursive: true);
         // ignore: empty_catches
       } catch (e) {}
     }
@@ -49,7 +55,7 @@ class SharedStorageHandle {
   Directory createSubDir(String directory) {
     final dir = Directory(p.join(path, directory));
     try {
-      dir.createSync();
+      dir.createSync(recursive: true);
       // ignore: empty_catches
     } catch (e) {}
     return dir;
@@ -65,10 +71,14 @@ class SharedStorageHandle {
   }
 
   Future<void> rescan() async {
-    await MediaScanner.loadMedia(path: path);
+    try {
+      await storage.scanMedia(path);
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   Future<void> hide(bool hide) async {
+    if (!canHide) return;
     await init();
     final isExists = _nomedia.existsSync();
     try {
@@ -85,7 +95,7 @@ class SharedStorageHandle {
   Future<void> open(String dest, {String? on}) async {
     try {
       final filePath = p.join(on ?? path, Uri.decodeFull(dest));
-      await StorageUtil().open(filePath);
+      await storage.open(filePath);
       // ignore: empty_catches
     } catch (e) {}
   }

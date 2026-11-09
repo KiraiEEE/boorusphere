@@ -3,8 +3,10 @@ import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/booru/entity/fetch_result.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'suggestion_state.g.dart';
@@ -49,12 +51,9 @@ class SuggestionState extends _$SuggestionState {
     try {
       final res =
           await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
-      final blockedTags = ref.read(tagsBlockerRepoProvider);
-      final result = res
-          .where(
-              (it) => !blockedTags.get().values.map((e) => e.name).contains(it))
-          .toSet();
-      if (word != _lastWord) return;
+      if (!ref.mounted || word != _lastWord) return;
+      final blacklist = ref.read(blacklistProvider(server.id));
+      final result = res.whereNot(blacklist.blocksTag).toSet();
 
       if (result.isEmpty && word.isNotEmpty) {
         state = FetchResult.error(state.data, error: BooruError.empty);
@@ -63,7 +62,7 @@ class SuggestionState extends _$SuggestionState {
 
       state = FetchResult.data(result);
     } catch (err, stack) {
-      if (word != _lastWord) {
+      if (!ref.mounted || word != _lastWord) {
         return;
       }
       state = FetchResult.error(state.data, error: err, stackTrace: stack);

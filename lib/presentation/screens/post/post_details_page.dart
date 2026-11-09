@@ -9,13 +9,13 @@ import 'package:boorusphere/presentation/utils/entity/pixel_size.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
+import 'package:boorusphere/presentation/widgets/glass.dart';
 import 'package:boorusphere/presentation/widgets/styled_overlay_region.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -50,7 +50,9 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
     final rating = post.rating.describe(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.t.details)),
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBar: GlassAppBar(title: Text(context.t.details)),
       body: StyledOverlayRegion(
         child: SafeArea(
           child: ListView(
@@ -115,7 +117,7 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
               ListTile(
                 title: Text(context.t.tags),
                 subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 72),
+                  padding: const EdgeInsets.only(top: 8, bottom: 96),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -170,56 +172,117 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
           ),
         ),
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.tag,
-        backgroundColor: context.colorScheme.tertiary,
-        foregroundColor: context.colorScheme.onTertiary,
-        visible: selectedtag.value.isNotEmpty,
-        children: [
-          SpeedDialChild(
-              child: const Icon(Icons.copy),
-              label: context.t.actionTag.copy,
-              onTap: () {
-                final tags = selectedtag.value.join(' ');
-                if (tags.isNotEmpty) {
-                  clip(context, tags);
-                }
-              }),
-          SpeedDialChild(
-            child: const Icon(Icons.block),
-            label: context.t.actionTag.block,
-            onTap: () {
-              final selectedTags = selectedtag.value;
-              if (selectedTags.isNotEmpty) {
-                ref
-                    .read(tagsBlockerStateProvider.notifier)
-                    .pushAll(tags: selectedTags);
-                context.scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: Text(context.t.actionTag.blocked),
-                    duration: const Duration(seconds: 1),
+      bottomNavigationBar: _TagSelectionBar(
+        selected: selectedtag.value,
+        onClear: () => selectedtag.value = [],
+        onSearch: () => updateSearch(selectedtag.value),
+        onAppend: () => updateSearch(
+            [...session.query.toWordList(), ...selectedtag.value]),
+        onCopy: () => clip(context, selectedtag.value.join(' ')),
+        onBlock: () {
+          ref
+              .read(tagsBlockerStateProvider.notifier)
+              .pushAll(tags: selectedtag.value);
+          selectedtag.value = [];
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.actionTag.blocked),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Floating glass toolbar that slides in while tags are selected.
+class _TagSelectionBar extends StatelessWidget {
+  const _TagSelectionBar({
+    required this.selected,
+    required this.onClear,
+    required this.onSearch,
+    required this.onAppend,
+    required this.onCopy,
+    required this.onBlock,
+  });
+
+  final List<String> selected;
+  final VoidCallback onClear;
+  final VoidCallback onSearch;
+  final VoidCallback onAppend;
+  final VoidCallback onCopy;
+  final VoidCallback onBlock;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = selected.isNotEmpty;
+    final cs = context.colorScheme;
+    return IgnorePointer(
+      ignoring: !visible,
+      child: AnimatedSlide(
+        offset: visible ? Offset.zero : const Offset(0, 1.2),
+        duration: const Duration(milliseconds: 320),
+        curve: visible ? Curves.easeOutBack : Curves.easeInCubic,
+        child: AnimatedOpacity(
+          opacity: visible ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: SafeArea(
+            minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Glass(
+              borderRadius: const BorderRadius.all(Radius.circular(22)),
+              color: cs.surfaceContainerHigh,
+              border: Border.all(color: cs.outlineVariant),
+              padding: const EdgeInsets.fromLTRB(6, 6, 8, 6),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(context)
+                        .clearButtonTooltip,
+                    onPressed: onClear,
+                    icon: const Icon(Icons.close_rounded),
                   ),
-                );
-              }
-            },
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: ScaleTransition(scale: anim, child: child),
+                      ),
+                      child: Text(
+                        '${selected.length}',
+                        key: ValueKey(selected.length),
+                        style: context.theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.t.actionTag.copy,
+                    onPressed: onCopy,
+                    icon: const Icon(Icons.copy_rounded),
+                  ),
+                  IconButton(
+                    tooltip: context.t.actionTag.block,
+                    onPressed: onBlock,
+                    icon: const Icon(Icons.block_rounded),
+                  ),
+                  IconButton(
+                    tooltip: context.t.actionTag.append,
+                    onPressed: onAppend,
+                    icon: const Icon(Icons.playlist_add_rounded),
+                  ),
+                  const SizedBox(width: 4),
+                  FilledButton.icon(
+                    onPressed: onSearch,
+                    icon: const Icon(Icons.search_rounded, size: 18),
+                    label: Text(context.t.actionTag.search),
+                  ),
+                ],
+              ),
+            ),
           ),
-          SpeedDialChild(
-            child: const Icon(Icons.search),
-            label: context.t.actionTag.append,
-            onTap: () {
-              if (selectedtag.value.isEmpty) return;
-              updateSearch(
-                  [...session.query.toWordList(), ...selectedtag.value]);
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.search),
-            label: context.t.actionTag.search,
-            onTap: () {
-              updateSearch(selectedtag.value);
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

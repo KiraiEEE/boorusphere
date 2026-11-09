@@ -1,3 +1,4 @@
+import 'package:boorusphere/data/repository/booru/entity/booru_error.dart';
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
@@ -26,8 +27,29 @@ class BooruRepo implements ImageboardRepo {
   @override
   final Server server;
 
-  Future<Response> _request(String url, BooruParser parser) {
-    return client.get(url, options: _opt.copyWith(headers: parser.headers));
+  Future<Response> _request(String url, BooruParser parser) async {
+    try {
+      final res = await client.get(
+        url,
+        options: _opt.copyWith(headers: parser.headers),
+      );
+      if (_isAuthError(res.data)) throw BooruError.authRequired;
+      return res;
+    } on DioException catch (e) {
+      final code = e.response?.statusCode;
+      if (code == 401 || (code == 403 && _isAuthError(e.response?.data))) {
+        throw BooruError.authRequired;
+      }
+      rethrow;
+    }
+  }
+
+  static bool _isAuthError(Object? data) {
+    if (data is! String || data.length > 2048) return false;
+    final body = data.toLowerCase();
+    return body.contains('missing authentication') ||
+        body.contains('api key') && body.contains('required') ||
+        body.contains('<error>') && body.contains('auth');
   }
 
   @override

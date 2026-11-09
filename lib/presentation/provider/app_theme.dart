@@ -1,12 +1,11 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:tinycolor2/tinycolor2.dart';
 
 part 'app_theme.g.dart';
 
-@riverpod
-AppThemeDataNotifier appThemeData(AppThemeDataRef ref) {
+@Riverpod(keepAlive: true)
+AppThemeDataNotifier appThemeData(Ref ref) {
   return AppThemeDataNotifier();
 }
 
@@ -23,77 +22,167 @@ class AppThemeData {
 }
 
 class AppThemeDataNotifier {
-  late AppThemeData _data = _createAppThemeData();
+  AppThemeData? _data;
+  ColorScheme? _light;
+  ColorScheme? _dark;
 
-  AppThemeData get data => _data;
+  AppThemeData get data => _data ??= _create();
 
+  /// Rebuilding ThemeData is not free, so only do it when the dynamic
+  /// palette actually changed.
   AppThemeData fillWith({ColorScheme? light, ColorScheme? dark}) {
-    _data = _createAppThemeData(light: light, dark: dark);
-    return _data;
+    if (_data != null && light == _light && dark == _dark) return _data!;
+    _light = light;
+    _dark = dark;
+    return _data = _create(light: light, dark: dark);
   }
 
-  AppThemeData _createAppThemeData({ColorScheme? light, ColorScheme? dark}) {
+  AppThemeData _create({ColorScheme? light, ColorScheme? dark}) {
+    final lightScheme = light?.harmonized() ?? defLightScheme;
+    final darkScheme = dark?.harmonized() ?? defDarkScheme;
     return AppThemeData(
-      day: _createThemeData(light, Brightness.light),
-      night: _createThemeData(dark, Brightness.dark),
-      midnight: _createThemeDataMidnight(dark),
+      day: _build(lightScheme),
+      night: _build(darkScheme),
+      midnight: _build(
+        darkScheme.copyWith(
+          surface: Colors.black,
+          surfaceContainerLowest: Colors.black,
+          surfaceContainerLow: const Color(0xFF0B0B0D),
+          surfaceContainer: const Color(0xFF121214),
+          surfaceContainerHigh: const Color(0xFF19191C),
+          surfaceContainerHighest: const Color(0xFF212125),
+        ),
+      ),
     );
   }
 
-  ThemeData _createThemeData(ColorScheme? scheme, Brightness brightness) {
-    final isDark = brightness == Brightness.dark;
-    final defScheme = isDark ? defDarkScheme : defLightScheme;
-    final harmonized = scheme?.harmonized() ?? defScheme;
-    final colorScheme = harmonized.copyWith(
-      surface: harmonized.surface.shade(isDark ? 30 : 3),
-      outlineVariant: harmonized.outlineVariant.withOpacity(0.3),
+  ThemeData _build(ColorScheme scheme) {
+    final isDark = scheme.brightness == Brightness.dark;
+    final cs = scheme.copyWith(
+      outlineVariant: scheme.outlineVariant.withValues(alpha: 0.35),
     );
-    final origin = isDark ? ThemeData.dark() : ThemeData.light();
-    return origin.copyWith(
-      colorScheme: colorScheme,
+    const radius = BorderRadius.all(Radius.circular(16));
+    const smallRadius = BorderRadius.all(Radius.circular(12));
+
+    final base = ThemeData(
+      colorScheme: cs,
+      brightness: cs.brightness,
+      visualDensity: VisualDensity.standard,
+      splashFactory: InkSparkle.splashFactory,
+    );
+
+    return base.copyWith(
+      scaffoldBackgroundColor: cs.surface,
+      canvasColor: cs.surface,
       appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
+        backgroundColor: cs.surface,
+        foregroundColor: cs.onSurface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: base.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
       ),
-      canvasColor: colorScheme.surface,
-      scaffoldBackgroundColor: colorScheme.surface,
-      dialogBackgroundColor: colorScheme.surface,
-      drawerTheme: origin.drawerTheme.copyWith(
-        backgroundColor: colorScheme.surfaceContainerLow,
+      drawerTheme: DrawerThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
       ),
-      snackBarTheme: origin.snackBarTheme.copyWith(
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: cs.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: radius),
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.zero,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: cs.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(11),
-            topRight: Radius.circular(11),
+          borderRadius: BorderRadius.all(Radius.circular(28)),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        dragHandleColor: cs.onSurfaceVariant.withValues(alpha: 0.4),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: cs.inverseSurface,
+        contentTextStyle: TextStyle(color: cs.onInverseSurface),
+        actionTextColor: cs.inversePrimary,
+        shape: const RoundedRectangleBorder(borderRadius: smallRadius),
+        insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      ),
+      listTileTheme: ListTileThemeData(
+        minVerticalPadding: 12,
+        iconColor: cs.onSurfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: const RoundedRectangleBorder(borderRadius: smallRadius),
+        side: BorderSide(color: cs.outlineVariant),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: cs.surfaceContainerHighest.withValues(alpha: 0.6),
+        border: const OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide(color: cs.primary, width: 1.5),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbIcon: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? const Icon(Icons.check_rounded, size: 16)
+              : null,
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          visualDensity: VisualDensity.compact,
+          shape: WidgetStateProperty.all(
+            const RoundedRectangleBorder(borderRadius: smallRadius),
           ),
         ),
-        backgroundColor: colorScheme.primaryContainer,
-        contentTextStyle: TextStyle(color: colorScheme.onPrimaryContainer),
       ),
-      listTileTheme: origin.listTileTheme.copyWith(
-        minVerticalPadding: 12,
-        iconColor: colorScheme.onSurfaceVariant,
+      scrollbarTheme: ScrollbarThemeData(
+        radius: const Radius.circular(8),
+        thickness: WidgetStateProperty.all(6),
+        thumbColor: WidgetStateProperty.all(
+          cs.onSurfaceVariant.withValues(alpha: isDark ? 0.35 : 0.3),
+        ),
       ),
-    );
-  }
-
-  ThemeData _createThemeDataMidnight(ColorScheme? scheme) {
-    final origin = _createThemeData(scheme, Brightness.dark);
-    return origin.copyWith(
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.black,
-        foregroundColor: origin.colorScheme.onSurface,
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: cs.inverseSurface,
+          borderRadius: smallRadius,
+        ),
+        textStyle: TextStyle(color: cs.onInverseSurface),
+        waitDuration: const Duration(milliseconds: 400),
       ),
-      primaryColor: Colors.black,
-      canvasColor: Colors.black,
-      scaffoldBackgroundColor: Colors.black,
-      drawerTheme: origin.drawerTheme.copyWith(
-        backgroundColor: Colors.black,
-      ),
-      colorScheme: origin.colorScheme.copyWith(
-        brightness: Brightness.dark,
-        surface: origin.colorScheme.surface,
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: cs.primary,
+        linearTrackColor: cs.surfaceContainerHighest,
+        circularTrackColor: Colors.transparent,
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/app_state/current_app_state_repo.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
@@ -24,13 +26,25 @@ import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/utils/device_workarounds.dart';
 import 'package:boorusphere/utils/logger.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+Future<void> _initHive() async {
+  if (Platform.isAndroid) {
+    await Hive.initFlutter();
+    return;
+  }
+  // keep desktop data in AppData instead of the user's Documents folder
+  final dir = await getApplicationSupportDirectory();
+  Hive.init(p.join(dir.path, 'data'));
+}
 
 void main() async {
   setupLogger();
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
+  await _initHive();
 
   Hive.registerAdapter(ServerAdapter());
   Hive.registerAdapter(BooruTagAdapter());
@@ -54,7 +68,7 @@ void main() async {
   ]);
 
   LocaleHelper.setupPluralResolver();
-  DeviceWorkarounds.apply();
+  if (Platform.isAndroid) DeviceWorkarounds.apply();
 
   runApp(
     ProviderScope(

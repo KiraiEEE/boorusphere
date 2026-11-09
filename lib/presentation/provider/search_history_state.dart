@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'search_history_state.g.dart';
 
 @riverpod
-Map<int, SearchHistory> filterHistory(FilterHistoryRef ref, String query) {
+Map<int, SearchHistory> filterHistory(Ref ref, String query) {
   final history = ref.watch(searchHistoryStateProvider);
   if (query.endsWith(' ') || query.isEmpty) {
     return history;

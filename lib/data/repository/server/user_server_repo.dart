@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/repository/server_data_repo.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 class UserServerRepo implements ServerRepo {
   UserServerRepo({
@@ -32,6 +32,31 @@ class UserServerRepo implements ServerRepo {
     await box.flush();
   }
 
+  /// Keep bundled presets metadata fresh on existing installs without
+  /// overriding anything the user has customized.
+  Future<void> _syncPresets() async {
+    final updates = <String, Server>{};
+    for (final entry in box.toMap().entries) {
+      final preset = _defaults[entry.key];
+      if (preset == null) continue;
+      final current = entry.value;
+      var synced = current.copyWith(nsfw: preset.nsfw);
+      if (current.searchUrl == preset.searchUrl &&
+          current.searchParserId.isEmpty) {
+        synced = synced.copyWith(searchParserId: preset.searchParserId);
+      }
+      if (current.tagSuggestionUrl == preset.tagSuggestionUrl &&
+          current.suggestionParserId.isEmpty) {
+        synced = synced.copyWith(suggestionParserId: preset.suggestionParserId);
+      }
+      if (current.apiAddr.isEmpty && preset.apiAddr.isNotEmpty) {
+        synced = synced.copyWith(apiAddr: preset.apiAddr);
+      }
+      if (synced != current) updates[entry.key] = synced;
+    }
+    if (updates.isNotEmpty) await box.putAll(updates);
+  }
+
   @override
   Future<void> populate() async {
     if (_defaults.isEmpty) return;
@@ -40,6 +65,7 @@ class UserServerRepo implements ServerRepo {
       await box.putAll(_defaults);
     } else {
       await _migrateKeys();
+      await _syncPresets();
     }
   }
 

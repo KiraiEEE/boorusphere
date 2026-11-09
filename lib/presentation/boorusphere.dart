@@ -5,8 +5,8 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
+import 'package:boorusphere/presentation/provider/download/download_backend.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
-import 'package:boorusphere/presentation/provider/download/flutter_downloader_handle.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
@@ -14,11 +14,25 @@ import 'package:boorusphere/presentation/routes/app_route_observer.dart';
 import 'package:boorusphere/presentation/routes/app_router.dart';
 import 'package:boorusphere/presentation/widgets/app_theme_builder.dart';
 import 'package:boorusphere/utils/http/overrides.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+/// Lets mouse and trackpad drag pageviews and lists on desktop, like touch.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
+}
 
 class Boorusphere extends HookConsumerWidget {
   const Boorusphere({super.key});
@@ -45,7 +59,6 @@ class Boorusphere extends HookConsumerWidget {
         ref.watch(uiSettingStateProvider.select((ui) => ui.themeMode));
     final isMidnight =
         ref.watch(uiSettingStateProvider.select((ui) => ui.midnightMode));
-    final envRepo = ref.watch(envRepoProvider);
     final cookieJar = ref.watch(cookieJarProvider);
     final router = useMemoized(AppRouter.new);
     final initialized = useState(false);
@@ -54,11 +67,8 @@ class Boorusphere extends HookConsumerWidget {
       initializeAsyncStates(ref, () {
         initialized.value = true;
       });
+      return null;
     }, []);
-
-    if (!initialized.value) {
-      return const SizedBox.shrink();
-    }
 
     useEffect(() {
       HttpOverrides.global = CustomHttpOverrides(cookieJar: cookieJar);
@@ -69,20 +79,29 @@ class Boorusphere extends HookConsumerWidget {
 
     useEffect(() {
       LocaleHelper.update(locale);
+      return null;
     }, [locale]);
 
     useEffect(() {
-      ref.read(downloaderHandleProvider).listen((progress) async {
+      final sub =
+          ref.read(downloadBackendProvider).progress.listen((progress) async {
         if (progress.status.isDownloaded) {
           await ref.read(sharedStorageHandleProvider).rescan();
         }
-
         await ref.read(downloadProgressStateProvider.notifier).update(progress);
       });
+      return sub.cancel;
     }, []);
 
-    if (envRepo.sdkVersion > 28) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    useEffect(() {
+      if (Platform.isAndroid) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
+      return null;
+    }, []);
+
+    if (!initialized.value) {
+      return const SizedBox.shrink();
     }
 
     return AppThemeBuilder(
@@ -92,6 +111,9 @@ class Boorusphere extends HookConsumerWidget {
         theme: appTheme.day,
         darkTheme: isMidnight ? appTheme.midnight : appTheme.night,
         themeMode: theme,
+        themeAnimationDuration: const Duration(milliseconds: 350),
+        themeAnimationCurve: Curves.easeOutCubic,
+        scrollBehavior: const _AppScrollBehavior(),
         routerConfig: router.config(
           navigatorObservers: () => [
             AppRouteObserver(ref),
@@ -100,7 +122,6 @@ class Boorusphere extends HookConsumerWidget {
         locale: TranslationProvider.of(context).locale.digestedFlutterLocale,
         supportedLocales: AppLocaleUtils.supportedLocales,
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        builder: (context, child) => child ?? Container(),
       ),
     );
   }

@@ -28,31 +28,30 @@ import 'package:boorusphere/domain/repository/server_data_repo.dart';
 import 'package:boorusphere/domain/repository/settings_repo.dart';
 import 'package:boorusphere/domain/repository/tags_blocker_repo.dart';
 import 'package:boorusphere/domain/repository/version_repo.dart';
-import 'package:boorusphere/pigeon/app_env.pi.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:flutter/services.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'provider.g.dart';
 
 @Riverpod(keepAlive: true)
-EnvRepo envRepo(EnvRepoRef ref) {
+EnvRepo envRepo(Ref ref) {
   throw UnimplementedError('must be initialized manually');
 }
 
 Future<EnvRepo> provideEnvRepo() async {
-  return CurrentEnvRepo(env: await AppEnv().get());
+  return CurrentEnvRepo.create();
 }
 
 @riverpod
-TagsBlockerRepo tagsBlockerRepo(TagsBlockerRepoRef ref) {
+TagsBlockerRepo tagsBlockerRepo(Ref ref) {
   final box = Hive.box<BooruTag>(BooruTagsBlockerRepo.boxKey);
   return BooruTagsBlockerRepo(box);
 }
 
 @riverpod
-ImageboardRepo imageboardRepo(ImageboardRepoRef ref, Server server) {
+ImageboardRepo imageboardRepo(Ref ref, Server server) {
   return BooruRepo(
     parsers: ref.watch(booruParsersProvider),
     client: ref.watch(dioProvider),
@@ -62,7 +61,7 @@ ImageboardRepo imageboardRepo(ImageboardRepoRef ref, Server server) {
 }
 
 @riverpod
-ChangelogRepo changelogRepo(ChangelogRepoRef ref) {
+ChangelogRepo changelogRepo(Ref ref) {
   return AppChangelogRepo(
     bundle: rootBundle,
     client: ref.watch(dioProvider),
@@ -70,19 +69,19 @@ ChangelogRepo changelogRepo(ChangelogRepoRef ref) {
 }
 
 @riverpod
-FavoritePostRepo favoritePostRepo(FavoritePostRepoRef ref) {
+FavoritePostRepo favoritePostRepo(Ref ref) {
   final box = Hive.box<FavoritePost>(UserFavoritePostRepo.key);
   return UserFavoritePostRepo(box);
 }
 
 @riverpod
-SearchHistoryRepo searchHistoryRepo(SearchHistoryRepoRef ref) {
+SearchHistoryRepo searchHistoryRepo(Ref ref) {
   final box = Hive.box<SearchHistory>(UserSearchHistoryRepo.key);
   return UserSearchHistoryRepo(box);
 }
 
 @riverpod
-ServerRepo serverRepo(ServerRepoRef ref) {
+ServerRepo serverRepo(Ref ref) {
   return UserServerRepo(
     defaultServers: ref.watch(defaultServersProvider),
     box: Hive.box<Server>(UserServerRepo.key),
@@ -90,13 +89,13 @@ ServerRepo serverRepo(ServerRepoRef ref) {
 }
 
 @riverpod
-SettingsRepo settingsRepo(SettingsRepoRef ref) {
+SettingsRepo settingsRepo(Ref ref) {
   final box = Hive.box(UserSettingsRepo.key);
   return UserSettingsRepo(box);
 }
 
 @riverpod
-VersionRepo versionRepo(VersionRepoRef ref) {
+VersionRepo versionRepo(Ref ref) {
   return AppVersionRepo(
     envRepo: ref.watch(envRepoProvider),
     client: ref.watch(dioProvider),
@@ -104,14 +103,14 @@ VersionRepo versionRepo(VersionRepoRef ref) {
 }
 
 @riverpod
-DownloadsRepo downloadsRepo(DownloadsRepoRef ref) {
+DownloadsRepo downloadsRepo(Ref ref) {
   final entryBox = Hive.box<DownloadEntry>(UserDownloadsRepo.entryKey);
   final progressBox = Hive.box<DownloadProgress>(UserDownloadsRepo.progressKey);
   return UserDownloadsRepo(entryBox: entryBox, progressBox: progressBox);
 }
 
 @riverpod
-AppStateRepo appStateRepo(AppStateRepoRef ref) {
+AppStateRepo appStateRepo(Ref ref) {
   final box = CurrentAppStateRepo.hiveBox();
   return CurrentAppStateRepo(box);
 }

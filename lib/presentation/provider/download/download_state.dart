@@ -2,6 +2,7 @@ import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_progress.dart';
 import 'package:boorusphere/domain/provider.dart';
+import 'package:boorusphere/presentation/provider/download/download_backend.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
 import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -44,6 +45,7 @@ class DownloadEntryState extends _$DownloadEntryState {
 
   Future<void> clear() async {
     final repo = ref.read(downloadsRepoProvider);
+    await ref.read(downloadBackendProvider).removeAll();
     await repo.clearEntries();
     await ref.read(downloadProgressStateProvider.notifier).clear();
     state = [];

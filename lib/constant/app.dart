@@ -10,6 +10,9 @@ String get kAppArch {
     case Abi.androidIA32:
     case Abi.androidArm:
       return 'armeabi-v7a';
+    case Abi.windowsX64:
+    case Abi.windowsArm64:
+      return 'windows-x64';
     default:
       return Abi.current().toString();
   }

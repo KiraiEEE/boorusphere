@@ -2,14 +2,14 @@ import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'server.freezed.dart';
 part 'server.g.dart';
 
 @freezed
-class Server with _$Server {
-  @HiveType(typeId: 2, adapterName: 'ServerAdapter')
+@HiveType(typeId: 2, adapterName: 'ServerAdapter')
+abstract class Server with _$Server {
   const factory Server({
     @HiveField(0, defaultValue: '') @Default('') String id,
     @HiveField(1, defaultValue: '') @Default('') String homepage,
@@ -20,6 +20,12 @@ class Server with _$Server {
     @HiveField(8, defaultValue: '') @Default('') String alias,
     @HiveField(9, defaultValue: '') @Default('') String searchParserId,
     @HiveField(10, defaultValue: '') @Default('') String suggestionParserId,
+    // User name / user id used for API authentication
+    @HiveField(11, defaultValue: '') @Default('') String login,
+    // API key used for API authentication
+    @HiveField(12, defaultValue: '') @Default('') String apiKey,
+    // Whether this server is dedicated to adult content
+    @HiveField(13, defaultValue: false) @Default(false) bool nsfw,
   }) = _Server;
 
   factory Server.fromJson(Map<String, dynamic> json) => _$ServerFromJson(json);
@@ -28,29 +34,51 @@ class Server with _$Server {
 
   bool get canSuggestTags => tagSuggestionUrl.contains('{tag-part}');
 
+  bool get hasCredentials => login.isNotEmpty && apiKey.isNotEmpty;
+
+  /// Gelbooru-like `index.php?page=dapi` APIs
+  bool get isDapi => searchUrl.contains('page=dapi');
+
+  RatingDialect get ratingDialect {
+    if (searchUrl.toUri().queryParameters.containsKey('offset')) {
+      return RatingDialect.szurubooru;
+    } else if (searchUrl.contains('api/v1/json/search')) {
+      return RatingDialect.booruOnRails;
+    }
+
+    // Danbooru (and forks) and Gelbooru 0.2.5 replaced "safe" with
+    // "general" + "sensitive". The resolved parser is the reliable hint here
+    // since e621 shares Danbooru's url scheme but not its ratings.
+    const modernParsers = {'Danbooru.json', 'Gelbooru.json', 'Gelbooru.xml'};
+    return modernParsers.contains(searchParserId)
+        ? RatingDialect.modern
+        : RatingDialect.legacy;
+  }
+
   String searchUrlOf(PageOption option, {required int page}) {
     final query = option.query.trim();
     var tags = query.isEmpty ? Server.defaultTag : query;
-    if (searchUrl.toUri().queryParameters.containsKey('offset')) {
-      // Szurubooru has exclusive-way (but still same shit) of rating
-      tags += ' ${_szuruRateString(option.searchRating)}';
-    } else if (searchUrl.contains('api/v1/json/search')) {
-      // booru-on-rails didn't support rating
+    final rate = ratingDialect.tagOf(option.searchRating);
+    if (ratingDialect == RatingDialect.booruOnRails) {
+      // booru-on-rails uses plain tags for rating
       tags = tags.replaceAll('rating:', '');
-    } else {
-      tags += ' ${_rateString(option.searchRating)}';
     }
+    if (rate.isNotEmpty) {
+      tags += ' $rate';
+    }
+
     tags = Uri.encodeComponent(tags.trim());
 
-    return '$homepage/$searchUrl'
+    final url = '$apiAddress/$searchUrl'
         .replaceAll('{tags}', tags)
         .replaceAll('{page-id}', '$page')
         .replaceAll('{post-offset}', (page * option.limit).toString())
         .replaceAll('{post-limit}', '${option.limit}');
+    return withAuth(url);
   }
 
   String suggestionUrlsOf(String query) {
-    final url = '$homepage/$tagSuggestionUrl'
+    final url = '$apiAddress/$tagSuggestionUrl'
         .replaceAll('{post-limit}', '$tagSuggestionLimit')
         .replaceAll('{tag-limit}', '$tagSuggestionLimit');
 
@@ -61,11 +89,25 @@ class Server with _$Server {
 
     if (query.isEmpty) {
       if (url.contains('name_pattern=')) {
-        return url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), '');
+        return withAuth(url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), ''));
       }
-      return url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), '*');
+      return withAuth(url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), '*'));
     }
-    return url.replaceAll('{tag-part}', encq);
+    return withAuth(url.replaceAll('{tag-part}', encq));
+  }
+
+  /// Append API credentials to [url] using the convention of the server.
+  String withAuth(String url) {
+    if (!hasCredentials) return url;
+    final user = Uri.encodeQueryComponent(login.trim());
+    final key = Uri.encodeQueryComponent(apiKey.trim());
+    final sep = url.contains('?') ? '&' : '?';
+    if (url.contains('page=dapi')) {
+      // Gelbooru, Rule34.xxx and other gelbooru-based servers
+      return '$url${sep}api_key=$key&user_id=$user';
+    }
+    // Danbooru, e621 and most danbooru-compatible servers
+    return '$url${sep}login=$user&api_key=$key';
   }
 
   String postUrlOf(int id) {
@@ -92,21 +134,50 @@ class Server with _$Server {
   static const tagSuggestionLimit = 20;
 }
 
-String _rateString(BooruRating searchRating) {
-  return switch (searchRating) {
-    BooruRating.safe => 'rating:safe',
-    BooruRating.questionable => 'rating:questionable',
-    BooruRating.explicit => 'rating:explicit',
-    BooruRating.sensitive => 'rating:sensitive',
-    _ => ''
-  };
-}
+/// How a server expects the rating to be expressed in search query
+enum RatingDialect {
+  /// safe / questionable / explicit (Moebooru, Gelbooru 0.2, e621, ...)
+  legacy,
 
-String _szuruRateString(BooruRating searchRating) {
-  return switch (searchRating) {
-    BooruRating.safe => 'safety:safe',
-    BooruRating.questionable => 'safety:sketchy',
-    BooruRating.sensitive || BooruRating.explicit => 'safety:unsafe',
-    _ => ''
-  };
+  /// general / sensitive / questionable / explicit (Danbooru, Gelbooru 0.2.5)
+  modern,
+
+  /// safety:safe / sketchy / unsafe
+  szurubooru,
+
+  /// plain rating tags (Derpibooru, Furbooru, ...)
+  booruOnRails;
+
+  String tagOf(BooruRating rating) {
+    return switch (this) {
+      RatingDialect.legacy => switch (rating) {
+          BooruRating.safe => 'rating:safe',
+          BooruRating.sensitive ||
+          BooruRating.questionable =>
+            'rating:questionable',
+          BooruRating.explicit => 'rating:explicit',
+          BooruRating.all => '',
+        },
+      RatingDialect.modern => switch (rating) {
+          BooruRating.safe => 'rating:general',
+          BooruRating.sensitive => 'rating:sensitive',
+          BooruRating.questionable => 'rating:questionable',
+          BooruRating.explicit => 'rating:explicit',
+          BooruRating.all => '',
+        },
+      RatingDialect.szurubooru => switch (rating) {
+          BooruRating.safe => 'safety:safe',
+          BooruRating.sensitive || BooruRating.questionable => 'safety:sketchy',
+          BooruRating.explicit => 'safety:unsafe',
+          BooruRating.all => '',
+        },
+      RatingDialect.booruOnRails => switch (rating) {
+          BooruRating.safe => 'safe',
+          BooruRating.sensitive => 'suggestive',
+          BooruRating.questionable => 'questionable',
+          BooruRating.explicit => 'explicit',
+          BooruRating.all => '',
+        },
+    };
+  }
 }

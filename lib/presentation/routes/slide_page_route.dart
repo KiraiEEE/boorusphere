@@ -6,7 +6,8 @@ class SlidePageRoute<T> extends PageRoute<T> {
   SlidePageRoute({
     required this.builder,
     super.settings,
-    this.duration = const Duration(milliseconds: 300),
+    this.duration = const Duration(milliseconds: 380),
+    this.reverseDuration = const Duration(milliseconds: 300),
     this.barrierColor = Colors.transparent,
     this.barrierLabel,
     this.maintainState = true,
@@ -15,6 +16,7 @@ class SlidePageRoute<T> extends PageRoute<T> {
   });
 
   final Duration duration;
+  final Duration reverseDuration;
 
   final SlidePageType type;
 
@@ -36,7 +38,11 @@ class SlidePageRoute<T> extends PageRoute<T> {
   Duration get transitionDuration => duration;
 
   @override
-  Duration get reverseTransitionDuration => duration;
+  Duration get reverseTransitionDuration => reverseDuration;
+
+  static final _slideIn = Tween(begin: const Offset(0.08, 0), end: Offset.zero);
+  static final _slideOut =
+      Tween(begin: Offset.zero, end: const Offset(-0.06, 0));
 
   @override
   Widget buildTransitions(
@@ -45,51 +51,40 @@ class SlidePageRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    final nextAnimation = CurvedAnimation(
+    // Material 3 "emphasized" motion: quick start, long gentle settle
+    final next = CurvedAnimation(
       parent: animation,
-      curve: Curves.easeInOutCubic,
+      curve: Curves.easeOutQuart,
+      reverseCurve: Curves.easeInCubic,
     );
-    final prevAnimation = CurvedAnimation(
+    final prev = CurvedAnimation(
       parent: secondaryAnimation,
-      curve: Curves.easeInOutCubic,
+      curve: Curves.easeOutQuart,
+      reverseCurve: Curves.easeInCubic,
     );
 
     final fade = FadeTransition(
-      opacity: Tween(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(nextAnimation),
+      opacity: CurvedAnimation(
+        parent: animation,
+        curve: const Interval(0, 0.6, curve: Curves.easeOut),
+        reverseCurve: const Interval(0.2, 1, curve: Curves.easeIn),
+      ),
       child: child,
     );
 
     Widget open(Widget child) {
-      return SlideTransition(
-        position: Tween(
-          begin: const Offset(0.1, 0),
-          end: Offset.zero,
-        ).animate(nextAnimation),
-        child: child,
-      );
+      return SlideTransition(position: _slideIn.animate(next), child: child);
     }
 
     Widget close(Widget child) {
-      return SlideTransition(
-        position: Tween(
-          begin: Offset.zero,
-          end: const Offset(-0.1, 0),
-        ).animate(prevAnimation),
-        child: child,
-      );
+      return SlideTransition(position: _slideOut.animate(prev), child: child);
     }
 
-    switch (type) {
-      case SlidePageType.open:
-        return open(fade);
-      case SlidePageType.close:
-        return close(fade);
-      default:
-        return open(close(fade));
-    }
+    return switch (type) {
+      SlidePageType.open => open(fade),
+      SlidePageType.close => close(fade),
+      SlidePageType.both => open(close(fade)),
+    };
   }
 
   @override
@@ -98,6 +93,8 @@ class SlidePageRoute<T> extends PageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return builder(context);
+    // Glass surfaces of a page share one backdrop read, but never with
+    // surfaces of other routes stacked below.
+    return BackdropGroup(child: builder(context));
   }
 }

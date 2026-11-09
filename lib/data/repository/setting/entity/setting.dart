@@ -14,5 +14,7 @@ enum Setting {
   uiLanguage,
   videoPlayerMuted,
   imeIncognito,
-  searchRating;
+  searchRating,
+  contentNsfw,
+  contentNsfwConfirmed;
 }

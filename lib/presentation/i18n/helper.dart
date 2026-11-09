@@ -46,7 +46,7 @@ class LocaleHelper {
   }) {
     final locales = AppLocale.values.whereNot((x) => ignores.contains(x));
     for (final locale in locales) {
-      LocaleSettings.setPluralResolver(
+      LocaleSettings.setPluralResolverSync(
         locale: locale,
         cardinalResolver: _defCardinalResolver,
         ordinalResolver: _defOrdinalResolver,
@@ -54,13 +54,11 @@ class LocaleHelper {
     }
   }
 
-  static Future update(AppLocale? locale) {
-    return Future(() {
-      if (locale != null) {
-        LocaleSettings.setLocale(locale);
-      } else {
-        LocaleSettings.useDeviceLocale();
-      }
-    });
+  static void update(AppLocale? locale) {
+    if (locale != null) {
+      LocaleSettings.setLocaleSync(locale);
+    } else {
+      LocaleSettings.useDeviceLocaleSync();
+    }
   }
 }

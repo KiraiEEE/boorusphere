@@ -1,10 +1,12 @@
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_progress.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_status.dart';
+import 'dart:io';
+
+import 'package:boorusphere/data/repository/storage/platform_storage.dart';
 import 'package:boorusphere/domain/repository/downloads_repo.dart';
-import 'package:boorusphere/pigeon/storage_util.pi.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sqflite;
 
@@ -42,14 +44,6 @@ class UserDownloadsRepo implements DownloadsRepo {
 
   @override
   Future<void> clearEntries() async {
-    final tasks = await FlutterDownloader.loadTasks();
-    if (tasks != null) {
-      await Future.wait(tasks.map(
-        (e) async => await FlutterDownloader.remove(
-            taskId: e.taskId, shouldDeleteContent: false),
-      ));
-    }
-
     await entryBox.deleteAll(entryBox.keys);
   }
 
@@ -65,8 +59,13 @@ class UserDownloadsRepo implements DownloadsRepo {
     final entryBox = await Hive.openBox<DownloadEntry>(entryKey);
     final progressBox = await Hive.openBox<DownloadProgress>(progressKey);
     await _adaptEntryDest(entryBox);
-    await _migrateProgresses(progressBox);
-    await FlutterDownloader.initialize();
+    if (Platform.isAndroid) {
+      await _migrateProgresses(progressBox);
+      await FlutterDownloader.initialize();
+    } else {
+      // desktop downloads don't survive restarts, mark leftovers as failed
+      await _failUnfinished(progressBox);
+    }
   }
 }
 
@@ -74,7 +73,7 @@ Future<void> _adaptEntryDest(Box<DownloadEntry> box) async {
   if (box.isEmpty) {
     return;
   }
-  var downloadPath = await StorageUtil().getDownloadPath();
+  var downloadPath = await PlatformStorage().downloadPath();
   downloadPath = path.join(downloadPath, 'Boorusphere');
   final newEntries = <MapEntry<String, DownloadEntry>>[];
   for (final entry in box.values) {
@@ -85,6 +84,15 @@ Future<void> _adaptEntryDest(Box<DownloadEntry> box) async {
     newEntries.add(MapEntry(entry.id, entry.copyWith(dest: newDest)));
   }
   await box.putAll(Map.fromEntries(newEntries));
+}
+
+Future<void> _failUnfinished(Box<DownloadProgress> box) async {
+  final unfinished = {
+    for (final it in box.values)
+      if (it.status.isPending || it.status.isDownloading || it.status.isPaused)
+        it.id: it.copyWith(status: DownloadStatus.failed),
+  };
+  if (unfinished.isNotEmpty) await box.putAll(unfinished);
 }
 
 Future<void> _migrateProgresses(Box<DownloadProgress> box) async {

@@ -4,32 +4,32 @@ import 'package:boorusphere/presentation/routes/slide_page_route.dart';
 import 'package:flutter/widgets.dart';
 
 @AutoRouterConfig()
-class AppRouter extends $AppRouter {
-  static PageRoute<T> _routeBuilder<T>(
+class AppRouter extends RootStackRouter {
+  static Route<T> _routeBuilder<T>(
     BuildContext context,
     Widget child,
-    RouteSettings? settings,
+    AutoRoutePage<T> page,
   ) {
-    return SlidePageRoute(
-      settings: settings,
+    return SlidePageRoute<T>(
+      settings: page,
       builder: (context) => child,
     );
   }
 
-  static PageRoute<T> _homeRouteBuilder<T>(
+  static Route<T> _homeRouteBuilder<T>(
     BuildContext context,
     Widget child,
-    RouteSettings? settings,
+    AutoRoutePage<T> page,
   ) {
-    return SlidePageRoute(
-      settings: settings,
+    return SlidePageRoute<T>(
+      settings: page,
       builder: (context) => child,
       type: SlidePageType.close,
     );
   }
 
   @override
-  final List<AutoRoute> routes = [
+  late final List<AutoRoute> routes = [
     AutoRoute(page: InitialDirectorRoute.page, path: '/'),
     CustomRoute(
       page: HomeRoute.page,

@@ -3,17 +3,17 @@ import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
+import 'package:boorusphere/presentation/provider/download/download_backend.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'downloader.g.dart';
 
 @riverpod
-Downloader downloader(DownloaderRef ref) {
+Downloader downloader(Ref ref) {
   return Downloader(ref);
 }
 
@@ -21,6 +21,16 @@ class Downloader {
   Downloader(this.ref);
 
   final Ref ref;
+
+  DownloadBackend get _backend => ref.read(downloadBackendProvider);
+
+  Map<String, String> _headersOf(String url) {
+    final versionRepo = ref.read(versionRepoProvider);
+    return HeadersFactory.builder()
+        .setUserAgent(versionRepo.current)
+        .setReferer(createReferer(url))
+        .build();
+  }
 
   Future<String?> download(
     Post post, {
@@ -34,17 +44,11 @@ class Downloader {
     final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
 
     await sharedStorageHandle.init();
-    final versionRepo = ref.read(versionRepoProvider);
-    final taskId = await FlutterDownloader.enqueue(
+    final taskId = await _backend.enqueue(
       url: fileUrl,
       fileName: fileName,
       savedDir: sharedStorageHandle.path,
-      showNotification: true,
-      openFileFromNotification: true,
-      headers: HeadersFactory.builder()
-          .setUserAgent(versionRepo.current)
-          .setReferer(createReferer(fileUrl))
-          .build(),
+      headers: _headersOf(fileUrl),
     );
 
     if (taskId != null) {
@@ -59,23 +63,34 @@ class Downloader {
   }
 
   Future<void> retry({required String id}) async {
-    final newId = await FlutterDownloader.retry(taskId: id);
+    final entry = ref.read(downloadEntryStateProvider).getById(id);
+    final newId = await _backend.retry(id);
     if (newId != null) {
-      final newEntry = ref
-          .read(downloadEntryStateProvider)
-          .firstWhere((it) => it.id == id, orElse: DownloadEntry.new)
-          .copyWith(id: newId);
-
-      await ref.read(downloadEntryStateProvider.notifier).update(id, newEntry);
+      await ref
+          .read(downloadEntryStateProvider.notifier)
+          .update(id, entry.copyWith(id: newId));
+      return;
     }
+
+    // The backend lost track of this task (e.g. app restarted on desktop),
+    // start it again from the post data.
+    if (entry == DownloadEntry.empty) return;
+    final post = entry.post;
+    final url = post.sampleFile.isNotEmpty &&
+            Uri.decodeComponent(post.sampleFile.fileName) ==
+                Uri.decodeComponent(entry.dest)
+        ? post.sampleFile
+        : post.originalFile;
+    await ref.read(downloadEntryStateProvider.notifier).remove(id);
+    await download(post, url: url);
   }
 
   Future<void> cancel({required String id}) async {
-    await FlutterDownloader.cancel(taskId: id);
+    await _backend.cancel(id);
   }
 
   Future<void> clear({required String id}) async {
-    await FlutterDownloader.remove(taskId: id, shouldDeleteContent: false);
+    await _backend.remove(id);
     await ref.read(downloadEntryStateProvider.notifier).remove(id);
   }
 

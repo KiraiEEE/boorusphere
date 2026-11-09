@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:boorusphere/data/repository/tags_blocker/entity/booru_tag.dart';
 import 'package:boorusphere/domain/repository/tags_blocker_repo.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 class BooruTagsBlockerRepo implements TagsBlockerRepo {
   BooruTagsBlockerRepo(this.box);
@@ -22,7 +22,8 @@ class BooruTagsBlockerRepo implements TagsBlockerRepo {
 
   @override
   Future<void> push(BooruTag value) async {
-    final tag = value.copyWith(name: value.name.trim());
+    final name = value.name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    final tag = value.copyWith(name: name);
     if (tag.name.isNotEmpty && !box.values.contains(tag)) {
       await box.add(tag);
     }

@@ -1,13 +1,13 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive_ce.dart';
 
 part 'favorite_post.freezed.dart';
 part 'favorite_post.g.dart';
 
 @freezed
-class FavoritePost with _$FavoritePost {
-  @HiveType(typeId: 5, adapterName: 'FavoritePostAdapter')
+@HiveType(typeId: 5, adapterName: 'FavoritePostAdapter')
+abstract class FavoritePost with _$FavoritePost {
   const factory FavoritePost({
     @HiveField(0, defaultValue: Post.empty) @Default(Post.empty) Post post,
     @HiveField(1, defaultValue: 0) @Default(0) int timestamp,

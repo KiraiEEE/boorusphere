@@ -19,6 +19,7 @@ import 'package:boorusphere/presentation/provider/settings/server_setting_state.
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
@@ -72,21 +73,23 @@ class DataBackupState extends _$DataBackupState {
 
   Future<void> restore({Future<bool?> Function()? onConfirm}) async {
     final backupsDir = await _backupDir();
-    await FilePicker.platform.clearTemporaryFiles();
+    if (Platform.isAndroid || Platform.isIOS) {
+      await FilePicker.clearTemporaryFiles();
+    }
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       initialDirectory: backupsDir.absolute.path,
       type: FileType.custom,
       allowedExtensions: ['zip'],
     );
 
-    final path = result?.files.single.path;
+    final path = result.firstOrNull?.path;
     if (path == null) {
       state = const BackupResult.idle();
       return;
     }
     final stream = InputFileStream(path);
-    final decoder = ZipDecoder().decodeBuffer(stream);
+    final decoder = ZipDecoder().decodeStream(stream);
     if (!decoder.files.any((it) => it.name == '$appId.json')) {
       state = const BackupResult.error();
       return;
@@ -101,7 +104,7 @@ class DataBackupState extends _$DataBackupState {
 
     state = const BackupResult.loading(DataBackupType.restore);
     for (final json in decoder.files) {
-      final content = utf8.decode(json.content);
+      final content = utf8.decode(json.readBytes() ?? const []);
       switch (json.name.replaceAll('.json', '')) {
         case UserServerRepo.key:
           await ref.read(serverRepoProvider).import(content);
@@ -137,8 +140,9 @@ class DataBackupState extends _$DataBackupState {
     final setting = ref.read(settingsRepoProvider).export();
     final searchHistory = ref.read(searchHistoryRepoProvider).export();
     final temp = await _tempDir();
+    final zipPath = path.join(temp.path, 'data.zip');
     final encoder = ZipFileEncoder();
-    encoder.create('${temp.path}/data.zip');
+    encoder.create(zipPath);
 
     final entries = [
       _metadata(),
@@ -154,10 +158,14 @@ class DataBackupState extends _$DataBackupState {
       final data = item.value;
       if (data is List && data.isEmpty) return;
 
-      final file = File('${temp.path}/${item.key}.json');
+      final file = File(path.join(temp.path, '${item.key}.json'));
       await file.writeAsString(jsonEncode(data));
-      return encoder.addFile(file);
     }));
+
+    // add sequentially, ZipFileEncoder is not safe for concurrent writes
+    for (final file in temp.listSync().whereType<File>()) {
+      if (file.path.endsWith('.json')) await encoder.addFile(file);
+    }
 
     await encoder.close();
 
@@ -169,7 +177,7 @@ class DataBackupState extends _$DataBackupState {
       zip.deleteSync();
     }
 
-    await File(encoder.zipPath).copy(zip.path);
+    await File(zipPath).copy(zip.path);
     temp.deleteSync(recursive: true);
     await ref.read(sharedStorageHandleProvider).rescan();
     state = BackupResult.exported(zip.path);

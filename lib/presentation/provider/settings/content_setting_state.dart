@@ -1,5 +1,6 @@
 import 'package:boorusphere/data/repository/setting/entity/setting.dart';
 import 'package:boorusphere/domain/provider.dart';
+import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/content_setting.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -15,7 +16,24 @@ class ContentSettingState extends _$ContentSettingState {
       blurTimelineOnly: repo.get(Setting.postBlurTimelineOnly, or: false),
       loadOriginal: repo.get(Setting.postLoadOriginal, or: false),
       videoMuted: repo.get(Setting.videoPlayerMuted, or: false),
+      // Users that already opted into non-safe ratings keep seeing them.
+      nsfw: repo.get(
+        Setting.contentNsfw,
+        or: repo.get(Setting.searchRating, or: BooruRating.safe) !=
+            BooruRating.safe,
+      ),
+      nsfwConfirmed: repo.get(Setting.contentNsfwConfirmed, or: false),
     );
+  }
+
+  Future<void> setNsfw(bool value) async {
+    final repo = ref.read(settingsRepoProvider);
+    state = state.copyWith(
+      nsfw: value,
+      nsfwConfirmed: state.nsfwConfirmed || value,
+    );
+    await repo.put(Setting.contentNsfw, value);
+    if (value) await repo.put(Setting.contentNsfwConfirmed, true);
   }
 
   Future<void> setBlurExplicitPost(bool value) async {
