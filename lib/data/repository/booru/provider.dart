@@ -7,6 +7,7 @@ import 'package:boorusphere/data/repository/booru/parser/e621_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/gelbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/gelbooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/moebooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/safebooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/shimmie_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/szurubooru_json_parser.dart';
@@ -26,6 +27,7 @@ List<BooruParser> booruParsers(Ref ref) {
     GelbooruJsonParser(),
     GelbooruXmlParser(),
     MoebooruJsonParser(),
+    NekosBestJsonParser(),
     SafebooruXmlParser(),
     ShimmieXmlParser(),
     SzurubooruJsonParser(),

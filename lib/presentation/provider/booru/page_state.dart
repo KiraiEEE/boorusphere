@@ -277,6 +277,7 @@ class PageState extends _$PageState {
   Future<List<Post>> _fetchAll(PageOption option) async {
     final sources = _sources
         .where((it) => !_exhausted.contains(it.id))
+        .where((it) => it.understandsQuery(option.query))
         .toList();
     if (sources.isEmpty) return const [];
 

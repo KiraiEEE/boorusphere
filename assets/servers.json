@@ -45,6 +45,15 @@
     "suggestionParserId": ""
   },
   {
+    "id": "nekos.best",
+    "homepage": "https://nekos.best",
+    "searchUrl": "api/v2/search?query={tags}&type=2&amount=20",
+    "tagSuggestionUrl": "api/v2/endpoints?q={tag-part}",
+    "postUrl": "",
+    "searchParserId": "NekosBest.json",
+    "suggestionParserId": "NekosBest.json"
+  },
+  {
     "id": "Sakugabooru",
     "homepage": "https://www.sakugabooru.com",
     "searchUrl": "post.json?tags={tags}&page={page-id}&limit={post-limit}",

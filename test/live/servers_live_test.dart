@@ -10,6 +10,7 @@ import 'package:boorusphere/data/repository/booru/parser/danbooru_json_parser.da
 import 'package:boorusphere/data/repository/booru/parser/e621_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/gelbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/moebooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/safebooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/shimmie_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/wallhaven_json_parser.dart';
@@ -26,6 +27,7 @@ void main() {
     E621JsonParser(),
     GelbooruJsonParser(),
     MoebooruJsonParser(),
+    NekosBestJsonParser(),
     SafebooruXmlParser(),
     ShimmieXmlParser(),
     WallhavenJsonParser(),
@@ -85,7 +87,8 @@ void main() {
       '${server.name} suggestion',
       skip: !enabled || !server.canSuggestTags,
       () async {
-        final url = server.suggestionUrlsOf('cat');
+        // nekos.best only suggests reaction names
+        final url = server.suggestionUrlsOf(server.isNekosBest ? 'ha' : 'cat');
         final res = await dio.get(url);
         if (res.statusCode == 401 ||
             res.statusCode == 503 ||

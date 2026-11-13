@@ -1,5 +1,6 @@
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
+import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -42,8 +43,19 @@ abstract class Server with _$Server {
   /// Gelbooru-like `index.php?page=dapi` APIs
   bool get isDapi => searchUrl.contains('page=dapi');
 
+  bool get isNekosBest => searchParserId == 'NekosBest.json';
+
+  /// Whether searching [query] here gives relevant results. nekos.best has no
+  /// tags, only reactions and fuzzy anime titles, so booru tags like "1girl"
+  /// would just match random titles when mixed into all-servers results.
+  bool understandsQuery(String query) {
+    if (!isNekosBest) return true;
+    final first = query.trim().split(RegExp(r'\s+')).first.toLowerCase();
+    return first.isEmpty || NekosBestJsonParser.categories.contains(first);
+  }
+
   RatingDialect get ratingDialect {
-    if (searchParserId == 'Wallhaven.json') {
+    if (searchParserId == 'Wallhaven.json' || isNekosBest) {
       // rating is filtered with the "purity" parameter instead
       return RatingDialect.none;
     } else if (searchUrl.toUri().queryParameters.containsKey('offset')) {
@@ -62,6 +74,9 @@ abstract class Server with _$Server {
   }
 
   String searchUrlOf(PageOption option, {required int page}) {
+    if (isNekosBest) {
+      return NekosBestJsonParser.searchUrlOf(apiAddress, option.query, page);
+    }
     final query = option.query.trim();
     var tags = query.isEmpty ? Server.defaultTag : query;
     final rate = ratingDialect.tagOf(option.searchRating);
