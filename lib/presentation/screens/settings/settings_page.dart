@@ -37,7 +37,12 @@ class SettingsPage extends StatelessWidget {
             ),
             _Section(
               title: Text(context.t.settings.content),
-              children: const [_HideAi(), _BlurContent(), _BlurTimelineOnly()],
+              children: const [
+                _HideGay(),
+                _HideAi(),
+                _BlurContent(),
+                _BlurTimelineOnly(),
+              ],
             ),
             _Section(
               title: Text(context.t.settings.browsing),
@@ -65,6 +70,24 @@ class SettingsPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HideGay extends ConsumerWidget {
+  const _HideGay();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(
+      contentSettingStateProvider.select((it) => it.hideGay),
+    );
+    return SwitchListTile(
+      title: Text(context.t.settings.hideGay.title),
+      subtitle: Text(context.t.settings.hideGay.desc),
+      value: value,
+      onChanged: (it) =>
+          ref.read(contentSettingStateProvider.notifier).setHideGay(it),
     );
   }
 }
@@ -249,6 +272,9 @@ class _BlurContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // explicit posts only ever show up with NSFW on
+    final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
+    if (!nsfw) return const SizedBox.shrink();
     return SwitchListTile(
       title: Text(context.t.settings.blurContent.title),
       subtitle: Padding(
@@ -273,6 +299,7 @@ class _BlurTimelineOnly extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final contentSettings = ref.watch(contentSettingStateProvider);
+    if (!contentSettings.nsfw) return const SizedBox.shrink();
 
     setBlurTimelineOnly(value) {
       ref.read(contentSettingStateProvider.notifier).setBlurTimelineOnly(value);

@@ -8,6 +8,7 @@ import 'package:boorusphere/presentation/provider/fullscreen_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/screens/post/post_placeholder_image.dart';
+import 'package:boorusphere/presentation/screens/post/pull_up_details.dart';
 import 'package:boorusphere/presentation/screens/post/quickbar.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
@@ -70,6 +71,10 @@ class PostImage extends HookConsumerWidget {
                 return GestureConfig(
                   maxScale: scaleRatio * 5,
                   inPageView: true,
+                  // while zoomed, vertical drags pan instead of opening details
+                  gestureDetailsIsChanged: (details) {
+                    postZoomed.value = (details?.totalScale ?? 1) > 1.01;
+                  },
                 );
               },
               handleLoadingProgress: true,

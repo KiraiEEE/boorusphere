@@ -18,5 +18,6 @@ enum Setting {
   contentNsfw,
   contentNsfwConfirmed,
   contentHideAi,
+  contentHideGay,
   searchSort,
 }

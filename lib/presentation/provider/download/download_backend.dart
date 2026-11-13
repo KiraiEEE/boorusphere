@@ -45,6 +45,10 @@ abstract class DownloadBackend {
 
   Future<void> removeAll();
 
+  /// Last known state of every task the engine still tracks. Used to catch up
+  /// on updates that happened while the app wasn't listening.
+  Future<List<DownloadProgress>> snapshot();
+
   void dispose();
 }
 
@@ -120,6 +124,20 @@ class AndroidDownloadBackend extends DownloadBackend {
   Future<void> removeAll() async {
     final tasks = await FlutterDownloader.loadTasks() ?? <DownloadTask>[];
     await Future.wait(tasks.map((it) => remove(it.taskId)));
+  }
+
+  @override
+  Future<List<DownloadProgress>> snapshot() async {
+    final tasks = await FlutterDownloader.loadTasks() ?? <DownloadTask>[];
+    return [
+      for (final task in tasks)
+        DownloadProgress(
+          id: task.taskId,
+          status: task.status.toDownloadStatus(),
+          progress: task.progress,
+          timestamp: task.timeCreated,
+        ),
+    ];
   }
 
   void _unregister() {
@@ -282,6 +300,10 @@ class DioDownloadBackend extends DownloadBackend {
     }
     _tasks.clear();
   }
+
+  // every update is emitted live from this process, nothing to catch up on
+  @override
+  Future<List<DownloadProgress>> snapshot() async => const [];
 
   @override
   void dispose() {

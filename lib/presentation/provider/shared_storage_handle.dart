@@ -70,6 +70,26 @@ class SharedStorageHandle {
     return false;
   }
 
+  /// Index a single downloaded file so it shows up in the gallery
+  Future<void> rescanFile(String relativePath) async {
+    try {
+      await storage.scanMedia(p.join(path, Uri.decodeFull(relativePath)));
+      // ignore: empty_catches
+    } catch (e) {}
+  }
+
+  /// [fileName] if it's free in the download folder, otherwise
+  /// `name (1).ext`, `name (2).ext`, ... so nothing gets overwritten
+  String availableName(String fileName) {
+    if (!fileExists(fileName)) return fileName;
+    final ext = p.extension(fileName);
+    final base = p.basenameWithoutExtension(fileName);
+    for (var i = 1; ; i++) {
+      final candidate = '$base ($i)$ext';
+      if (!fileExists(candidate)) return candidate;
+    }
+  }
+
   Future<void> rescan() async {
     try {
       await storage.scanMedia(path);

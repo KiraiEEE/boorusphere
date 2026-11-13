@@ -11,7 +11,7 @@ class WallhavenJsonParser extends BooruParser {
 
   @override
   final searchQuery =
-      'api/v1/search?q={tags}&page={page-id}&purity=110&categories=111';
+      'api/v1/search?q={tags}&page={page-id}&purity=111&categories=111';
 
   @override
   final postUrl = 'w/{post-id}';

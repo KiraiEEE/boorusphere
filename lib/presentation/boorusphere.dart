@@ -6,10 +6,9 @@ import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/download/download_backend.dart';
-import 'package:boorusphere/presentation/provider/download/download_state.dart';
+import 'package:boorusphere/presentation/provider/download/downloader.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
-import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/routes/app_route_observer.dart';
 import 'package:boorusphere/presentation/routes/app_router.dart';
 import 'package:boorusphere/presentation/widgets/app_theme_builder.dart';
@@ -85,15 +84,19 @@ class Boorusphere extends HookConsumerWidget {
     }, [locale]);
 
     useEffect(() {
-      final sub = ref.read(downloadBackendProvider).progress.listen((
-        progress,
-      ) async {
-        if (progress.status.isDownloaded) {
-          await ref.read(sharedStorageHandleProvider).rescan();
-        }
-        await ref.read(downloadProgressStateProvider.notifier).update(progress);
-      });
-      return sub.cancel;
+      final downloader = ref.read(downloaderProvider);
+      final sub = ref
+          .read(downloadBackendProvider)
+          .progress
+          .listen(downloader.onProgress);
+      // catch up on downloads that finished while the app was closed or
+      // in the background, and again every time it comes back
+      downloader.sync();
+      final lifecycle = AppLifecycleListener(onResume: downloader.sync);
+      return () {
+        sub.cancel();
+        lifecycle.dispose();
+      };
     }, []);
 
     useEffect(() {

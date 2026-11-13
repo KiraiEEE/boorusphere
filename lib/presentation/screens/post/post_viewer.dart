@@ -7,6 +7,7 @@ import 'package:boorusphere/presentation/screens/post/post_image.dart';
 import 'package:boorusphere/presentation/screens/post/post_toolbox.dart';
 import 'package:boorusphere/presentation/screens/post/post_unknown.dart';
 import 'package:boorusphere/presentation/screens/post/post_video.dart';
+import 'package:boorusphere/presentation/screens/post/pull_up_details.dart';
 import 'package:boorusphere/presentation/utils/entity/content.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
@@ -76,7 +77,11 @@ class PostViewer extends HookConsumerWidget {
     useEffect(() {
       Future(() => timelineController.scrollTo(currentPage.value));
       WakelockPlus.enable();
-      return WakelockPlus.disable;
+      postZoomed.value = false;
+      return () {
+        WakelockPlus.disable();
+        postZoomed.value = false;
+      };
     }, []);
 
     void turnPage(int delta) {
@@ -113,60 +118,65 @@ class PostViewer extends HookConsumerWidget {
               nightMode: true,
               child: Stack(
                 children: [
-                  ExtendedImageGesturePageView.builder(
-                    controller: pageController,
-                    onPageChanged: (index) async {
-                      SchedulerBinding.instance.addPostFrameCallback((
-                        timeStamp,
-                      ) {
-                        if (context.mounted) {
-                          currentPage.value = index;
-                        }
-                      });
-                      timelineController.scrollTo(index);
-                      context.scaffoldMessenger.hideCurrentSnackBar();
-                      if (loadMore == null) return;
-
-                      final offset = index + 1;
-                      final threshold =
-                          posts.length / 100 * (100 - loadMoreThreshold);
-                      if (offset + threshold > posts.length - 1) {
-                        isLoadingMore.value = true;
-                        await loadMore();
-                        await Future.delayed(kThemeAnimationDuration, () {
+                  PullUpToDetails(
+                    post: post,
+                    child: ExtendedImageGesturePageView.builder(
+                      controller: pageController,
+                      onPageChanged: (index) async {
+                        // a new page always starts unzoomed
+                        postZoomed.value = false;
+                        SchedulerBinding.instance.addPostFrameCallback((
+                          timeStamp,
+                        ) {
                           if (context.mounted) {
-                            isLoadingMore.value = false;
+                            currentPage.value = index;
                           }
                         });
-                      }
-                    },
-                    itemCount: posts.length,
-                    itemBuilder: (context, index) {
-                      precachePosts(index, loadOriginal);
+                        timelineController.scrollTo(index);
+                        context.scaffoldMessenger.hideCurrentSnackBar();
+                        if (loadMore == null) return;
 
-                      final post = posts.elementAt(index);
-                      final Widget widget;
-                      switch (post.content.type) {
-                        case PostType.photo:
-                          widget = PostImage(post: post);
-                          break;
-                        case PostType.video:
-                          widget = PostVideo(
-                            post: post,
-                            onToolboxVisibilityChange: (visible) {
-                              showAppbar.value = visible;
-                            },
-                          );
-                          break;
-                        default:
-                          widget = PostUnknown(post: post);
-                          break;
-                      }
-                      return HeroMode(
-                        enabled: index == currentPage.value,
-                        child: ClipRect(child: widget),
-                      );
-                    },
+                        final offset = index + 1;
+                        final threshold =
+                            posts.length / 100 * (100 - loadMoreThreshold);
+                        if (offset + threshold > posts.length - 1) {
+                          isLoadingMore.value = true;
+                          await loadMore();
+                          await Future.delayed(kThemeAnimationDuration, () {
+                            if (context.mounted) {
+                              isLoadingMore.value = false;
+                            }
+                          });
+                        }
+                      },
+                      itemCount: posts.length,
+                      itemBuilder: (context, index) {
+                        precachePosts(index, loadOriginal);
+
+                        final post = posts.elementAt(index);
+                        final Widget widget;
+                        switch (post.content.type) {
+                          case PostType.photo:
+                            widget = PostImage(post: post);
+                            break;
+                          case PostType.video:
+                            widget = PostVideo(
+                              post: post,
+                              onToolboxVisibilityChange: (visible) {
+                                showAppbar.value = visible;
+                              },
+                            );
+                            break;
+                          default:
+                            widget = PostUnknown(post: post);
+                            break;
+                        }
+                        return HeroMode(
+                          enabled: index == currentPage.value,
+                          child: ClipRect(child: widget),
+                        );
+                      },
+                    ),
                   ),
                   Positioned(
                     top: 0,

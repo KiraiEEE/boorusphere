@@ -38,7 +38,7 @@
   {
     "id": "Wallhaven",
     "homepage": "https://wallhaven.cc",
-    "searchUrl": "api/v1/search?q={tags}&page={page-id}&purity=110&categories=111",
+    "searchUrl": "api/v1/search?q={tags}&page={page-id}&purity=111&categories=111",
     "tagSuggestionUrl": "",
     "postUrl": "w/{post-id}",
     "searchParserId": "Wallhaven.json",
@@ -54,42 +54,6 @@
     "suggestionParserId": "Moebooru.json"
   },
   {
-    "id": "e926",
-    "homepage": "https://e926.net",
-    "searchUrl": "posts.json?tags={tags}&page={page-id}&limit={post-limit}",
-    "tagSuggestionUrl": "tags.json?search[name_matches]=*{tag-part}*&search[order]=count&limit={post-limit}",
-    "postUrl": "posts/{post-id}",
-    "searchParserId": "E621.json",
-    "suggestionParserId": "Danbooru.json"
-  },
-  {
-    "id": "Derpibooru",
-    "homepage": "https://derpibooru.org",
-    "searchUrl": "api/v1/json/search/images?q={tags}&per_page={post-limit}&page={page-id}",
-    "tagSuggestionUrl": "api/v1/json/search/tags?q={tag-part}*",
-    "postUrl": "{post-id}",
-    "searchParserId": "BooruOnRails.json",
-    "suggestionParserId": "BooruOnRails.json"
-  },
-  {
-    "id": "Furbooru",
-    "homepage": "https://furbooru.org",
-    "searchUrl": "api/v1/json/search/images?q={tags}&per_page={post-limit}&page={page-id}",
-    "tagSuggestionUrl": "api/v1/json/search/tags?q={tag-part}*",
-    "postUrl": "{post-id}",
-    "searchParserId": "BooruOnRails.json",
-    "suggestionParserId": "BooruOnRails.json"
-  },
-  {
-    "id": "TBIB",
-    "homepage": "https://tbib.org",
-    "searchUrl": "index.php?page=dapi&s=post&q=index&tags={tags}&pid={page-id}&limit={post-limit}",
-    "tagSuggestionUrl": "index.php?page=dapi&s=tag&q=index&name_pattern=%{tag-part}%&orderby=count&limit={post-limit}",
-    "postUrl": "index.php?page=post&s=view&id={post-id}",
-    "searchParserId": "Safebooru.xml",
-    "suggestionParserId": "Safebooru.xml"
-  },
-  {
     "id": "AIBooru",
     "homepage": "https://aibooru.online",
     "searchUrl": "posts.json?tags={tags}&page={page-id}&limit={post-limit}",
@@ -98,16 +62,6 @@
     "searchParserId": "Danbooru.json",
     "suggestionParserId": "Danbooru.json",
     "ai": true
-  },
-  {
-    "id": "e621",
-    "homepage": "https://e621.net",
-    "searchUrl": "posts.json?tags={tags}&page={page-id}&limit={post-limit}",
-    "tagSuggestionUrl": "tags.json?search[name_matches]=*{tag-part}*&search[order]=count&limit={post-limit}",
-    "postUrl": "posts/{post-id}",
-    "searchParserId": "E621.json",
-    "suggestionParserId": "Danbooru.json",
-    "nsfw": true
   },
   {
     "id": "Konachan.com",

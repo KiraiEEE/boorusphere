@@ -98,10 +98,13 @@ abstract class Server with _$Server {
         .replaceAll('{post-offset}', (page * option.limit).toString())
         .replaceAll('{post-limit}', '${option.limit}');
     var result = url + _sortParamOf(option.sort);
-    if (searchParserId == 'Wallhaven.json' &&
-        option.searchRating == BooruRating.safe) {
-      // purity flags: sfw/sketchy/nsfw
-      result = result.replaceFirst(RegExp(r'purity=\d{3}'), 'purity=100');
+    if (searchParserId == 'Wallhaven.json') {
+      // purity flags: sfw/sketchy/nsfw. Wallhaven leaves nsfw out for
+      // guests, so asking for everything is harmless without an API key.
+      result = result.replaceFirst(
+        RegExp(r'purity=\d{3}'),
+        option.searchRating == BooruRating.safe ? 'purity=100' : 'purity=111',
+      );
     }
     return withAuth(result);
   }
@@ -139,6 +142,7 @@ abstract class Server with _$Server {
 
   /// Whether this server can order results by [sort]
   bool supportsSort(SearchSort sort) =>
+      isAll ||
       sort == SearchSort.latest ||
       _sortTagOf(sort).isNotEmpty ||
       _sortParamOf(sort).isNotEmpty;
@@ -206,7 +210,15 @@ abstract class Server with _$Server {
 
   String get name => alias.isNotEmpty ? alias : id;
 
+  /// Virtual entry that searches every server at once
+  bool get isAll => id == allServersId;
+
   static const Server empty = Server();
+  static const String allServersId = '@all';
+  static const Server allServers = Server(
+    id: allServersId,
+    alias: 'All servers',
+  );
   static const String defaultTag = '*';
   static const tagSuggestionLimit = 20;
 }

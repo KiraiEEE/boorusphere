@@ -1,3 +1,18 @@
+## 2.0.1
+
+* One NSFW switch replaces safe mode and the rating picker, in Settings and right in the search bar
+* "All servers" feed that searches every enabled server at once
+* Switch to hide gay content
+* Fix downloads failing when the same file is saved twice, and Retry never succeeding
+* Fix downloads staying stuck on "downloading" after the app was closed or in the background
+* Fix finished downloads not showing up in the gallery
+* Search bar is a single flat frosted bar
+* Faster, solid side drawer
+* Swipe up on a post to pull up its details and tags
+* Simpler post details and tag list
+* The app stays in portrait, fullscreen video no longer rotates the screen
+* Removed e621, e926, Derpibooru, Furbooru and TBIB from the presets
+
 ## 2.0.0
 
 * Windows support, alongside Android (keyboard navigation in the viewer)

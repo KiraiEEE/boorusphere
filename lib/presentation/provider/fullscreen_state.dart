@@ -3,28 +3,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'fullscreen_state.g.dart';
 
+/// Hides the system bars while viewing a post. The screen orientation is
+/// left alone: the app stays in portrait (see AndroidManifest.xml).
 @riverpod
 class FullscreenState extends _$FullscreenState {
-  List<DeviceOrientation> _lastOrientations = [];
-
   @override
   bool build() {
     ref.onDispose(reset);
-    _lastOrientations = [];
     return false;
   }
 
-  Future<void> toggle({bool shouldLandscape = false}) async {
+  Future<void> toggle() async {
     state = !state;
-    final orientations = state && shouldLandscape
-        ? [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]
-        : <DeviceOrientation>[];
-
-    if (orientations != _lastOrientations) {
-      _lastOrientations = orientations;
-      await SystemChrome.setPreferredOrientations(orientations);
-    }
-
     state
         ? await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive)
         : await unfullscreen();
@@ -35,7 +25,6 @@ class FullscreenState extends _$FullscreenState {
   }
 
   void reset() {
-    SystemChrome.setPreferredOrientations([]);
     unfullscreen();
   }
 }

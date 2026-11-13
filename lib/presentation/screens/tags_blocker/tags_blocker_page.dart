@@ -120,7 +120,7 @@ class TagsBlockerPage extends HookConsumerWidget {
                 label: Text(context.t.tagsBlocker.scopeAll),
                 icon: const Icon(Icons.public_rounded),
               ),
-              if (currentServer != Server.empty)
+              if (currentServer != Server.empty && !currentServer.isAll)
                 ButtonSegment(
                   value: currentServer.id,
                   label: Text(

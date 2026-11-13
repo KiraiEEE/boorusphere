@@ -260,9 +260,7 @@ class _ToolboxOverlay extends ConsumerWidget {
               ),
               padding: const EdgeInsets.all(16),
               onPressed: () {
-                ref
-                    .read(fullscreenStateProvider.notifier)
-                    .toggle(shouldLandscape: post.width > post.height);
+                ref.read(fullscreenStateProvider.notifier).toggle();
                 onAutoHideRequest?.call();
               },
             ),

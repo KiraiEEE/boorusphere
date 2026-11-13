@@ -63,6 +63,7 @@ class ServerState extends _$ServerState {
 
 extension ServerDataListExt on Iterable<Server> {
   Server getById(String id, {Server? or}) {
+    if (id == Server.allServersId && isNotEmpty) return Server.allServers;
     return isEmpty
         ? Server.empty
         : firstWhere((it) => it.id == id, orElse: () => or ?? first);

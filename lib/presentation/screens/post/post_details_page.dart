@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
-import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -117,13 +116,13 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
 
     final sections = post.hasCategorizedTags
         ? [
-            (context.t.artist, post.tagsArtist, _TagCategory.artist),
-            (context.t.character, post.tagsCharacter, _TagCategory.character),
-            (context.t.copyright, post.tagsCopyright, _TagCategory.copyright),
-            (context.t.general, post.tagsGeneral, _TagCategory.general),
-            (context.t.meta, post.tagsMeta, _TagCategory.meta),
+            (context.t.artist, post.tagsArtist),
+            (context.t.character, post.tagsCharacter),
+            (context.t.copyright, post.tagsCopyright),
+            (context.t.general, post.tagsGeneral),
+            (context.t.meta, post.tagsMeta),
           ]
-        : [(context.t.tags, post.tags, _TagCategory.general)];
+        : [(context.t.tags, post.tags)];
 
     return Scaffold(
       extendBody: true,
@@ -191,12 +190,11 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                   ],
                 ),
               ),
-              for (final (label, tags, category) in sections)
+              for (final (label, tags) in sections)
                 if (tags.isNotEmpty)
                   _TagsView(
                     label: label,
                     tags: tags,
-                    category: category,
                     selected: selected.value,
                     inQuery: queryTags,
                     onTap: toggle,
@@ -225,52 +223,25 @@ class _InfoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.colorScheme;
-    final rating = post.rating;
-    final ratingLabel = rating.describe(context);
-    final ratingColor = switch (rating) {
-      BooruRating.safe => Colors.green,
-      BooruRating.sensitive => Colors.amber,
-      BooruRating.questionable => Colors.orange,
-      BooruRating.explicit => Colors.red,
-      BooruRating.all => cs.outline,
-    };
-
-    Widget pill(IconData icon, String text, {Color? color}) {
-      final tint = color ?? cs.secondary;
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: tint.withValues(alpha: 0.14),
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+    final rating = post.rating.describe(context);
+    final parts = [
+      if (rating.isNotEmpty) rating,
+      '${post.score} ${context.t.score.toLowerCase()}',
+      if (post.originalSize.hasPixels) '${post.originalSize}',
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        parts.join('  ·  '),
+        style: context.theme.textTheme.bodyMedium?.copyWith(
+          color: context.colorScheme.onSurfaceVariant,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: tint),
-            const SizedBox(width: 6),
-            Text(text, style: context.theme.textTheme.labelLarge),
-          ],
-        ),
-      );
-    }
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        if (ratingLabel.isNotEmpty)
-          pill(Icons.shield_outlined, ratingLabel, color: ratingColor),
-        pill(Icons.arrow_upward_rounded, '${post.score}'),
-        if (post.originalSize.hasPixels)
-          pill(Icons.aspect_ratio_rounded, '${post.originalSize}'),
-        pill(Icons.tag_rounded, '${post.allTags.length}'),
-      ],
+      ),
     );
   }
 }
 
-/// Floating glass toolbar that slides in while tags are selected.
+/// Bottom bar with actions for the selected tags.
 class _TagSelectionBar extends StatelessWidget {
   const _TagSelectionBar({
     required this.selected,
@@ -295,19 +266,18 @@ class _TagSelectionBar extends StatelessWidget {
     return IgnorePointer(
       ignoring: !visible,
       child: AnimatedSlide(
-        offset: visible ? Offset.zero : const Offset(0, 1.2),
-        duration: const Duration(milliseconds: 320),
-        curve: visible ? Curves.easeOutBack : Curves.easeInCubic,
-        child: AnimatedOpacity(
-          opacity: visible ? 1 : 0,
-          duration: const Duration(milliseconds: 200),
+        offset: visible ? Offset.zero : const Offset(0, 1),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        child: Material(
+          color: cs.surfaceContainer,
           child: SafeArea(
-            minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Glass(
-              borderRadius: const BorderRadius.all(Radius.circular(22)),
-              color: cs.surfaceContainerHigh,
-              border: Border.all(color: cs.outlineVariant),
-              padding: const EdgeInsets.fromLTRB(6, 6, 8, 6),
+            top: false,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: cs.outlineVariant)),
+              ),
+              padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
               child: Row(
                 children: [
                   IconButton(
@@ -318,19 +288,9 @@ class _TagSelectionBar extends StatelessWidget {
                     icon: const Icon(Icons.close_rounded),
                   ),
                   Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      transitionBuilder: (child, anim) => FadeTransition(
-                        opacity: anim,
-                        child: ScaleTransition(scale: anim, child: child),
-                      ),
-                      child: Text(
-                        '${selected.length}',
-                        key: ValueKey(selected.length),
-                        style: context.theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    child: Text(
+                      '${selected.length}',
+                      style: context.theme.textTheme.titleMedium,
                     ),
                   ),
                   IconButton(
@@ -349,10 +309,9 @@ class _TagSelectionBar extends StatelessWidget {
                     icon: const Icon(Icons.playlist_add_rounded),
                   ),
                   const SizedBox(width: 4),
-                  FilledButton.icon(
+                  FilledButton(
                     onPressed: onSearch,
-                    icon: const Icon(Icons.search_rounded, size: 18),
-                    label: Text(context.t.actionTag.search),
+                    child: Text(context.t.actionTag.search),
                   ),
                 ],
               ),
@@ -364,23 +323,10 @@ class _TagSelectionBar extends StatelessWidget {
   }
 }
 
-enum _TagCategory {
-  artist(Color(0xFFE5534B)),
-  character(Color(0xFF3FB950)),
-  copyright(Color(0xFFA371F7)),
-  general(null),
-  meta(Color(0xFFE3A008));
-
-  const _TagCategory(this.color);
-
-  final Color? color;
-}
-
 class _TagsView extends StatelessWidget {
   const _TagsView({
     required this.label,
     required this.tags,
-    required this.category,
     required this.selected,
     required this.inQuery,
     required this.onTap,
@@ -389,7 +335,6 @@ class _TagsView extends StatelessWidget {
 
   final String label;
   final List<String> tags;
-  final _TagCategory category;
   final List<String> selected;
   final Set<String> inQuery;
   final void Function(String tag) onTap;
@@ -397,40 +342,18 @@ class _TagsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.colorScheme;
-    final accent = category.color ?? cs.primary;
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: const BorderRadius.all(Radius.circular(2)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: context.theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${tags.length}',
-                  style: context.theme.textTheme.labelMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              label,
+              style: context.theme.textTheme.labelLarge?.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           Wrap(
@@ -440,7 +363,6 @@ class _TagsView extends StatelessWidget {
               for (final tag in tags)
                 _TagChip(
                   tag: tag,
-                  accent: category.color,
                   selected: selected.contains(tag),
                   inQuery: inQuery.contains(tag),
                   onTap: () => onTap(tag),
@@ -457,7 +379,6 @@ class _TagsView extends StatelessWidget {
 class _TagChip extends StatelessWidget {
   const _TagChip({
     required this.tag,
-    required this.accent,
     required this.selected,
     required this.inQuery,
     required this.onTap,
@@ -465,7 +386,6 @@ class _TagChip extends StatelessWidget {
   });
 
   final String tag;
-  final Color? accent;
   final bool selected;
   final bool inQuery;
   final VoidCallback onTap;
@@ -474,49 +394,26 @@ class _TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = context.colorScheme;
-    final base = accent ?? cs.onSurface;
-    final fg = selected ? cs.onPrimary : base;
-    final bg = selected ? cs.primary : base.withValues(alpha: 0.08);
-    const radius = BorderRadius.all(Radius.circular(10));
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      curve: Curves.easeOut,
-      decoration: BoxDecoration(
-        color: bg,
+    const radius = BorderRadius.all(Radius.circular(8));
+    return Material(
+      color: selected ? cs.secondaryContainer : cs.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(
         borderRadius: radius,
-        border: Border.all(
-          color: inQuery && !selected ? base.withValues(alpha: 0.6) : bg,
-        ),
+        // tags already in the current search get a thin outline
+        side: inQuery && !selected
+            ? BorderSide(color: cs.outline)
+            : BorderSide.none,
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: radius,
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 160),
-                  curve: Curves.easeOut,
-                  child: selected
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Icon(Icons.check_rounded, size: 14, color: fg),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                Text(
-                  tag.replaceAll('_', ' '),
-                  style: context.theme.textTheme.labelLarge?.copyWith(
-                    color: fg,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-              ],
+      child: InkWell(
+        borderRadius: radius,
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            tag.replaceAll('_', ' '),
+            style: context.theme.textTheme.bodyMedium?.copyWith(
+              color: selected ? cs.onSecondaryContainer : cs.onSurface,
             ),
           ),
         ),

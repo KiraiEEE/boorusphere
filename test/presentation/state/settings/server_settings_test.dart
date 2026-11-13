@@ -1,5 +1,5 @@
+import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/data/repository/setting/user_setting_repo.dart';
-import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -38,15 +38,12 @@ void main() async {
       expect(ref.read(serverSettingStateProvider).postLimit, 90);
     });
 
-    test('searchRating', () async {
+    test('sort', () async {
       await ref
           .read(serverSettingStateProvider.notifier)
-          .setRating(BooruRating.fromName('explicit'));
+          .setSort(SearchSort.popular);
 
-      expect(
-        ref.read(serverSettingStateProvider).searchRating,
-        BooruRating.explicit,
-      );
+      expect(ref.read(serverSettingStateProvider).sort, SearchSort.popular);
     });
   });
 }

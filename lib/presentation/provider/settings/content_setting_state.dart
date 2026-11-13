@@ -25,6 +25,7 @@ class ContentSettingState extends _$ContentSettingState {
       ),
       nsfwConfirmed: repo.get(Setting.contentNsfwConfirmed, or: false),
       hideAi: repo.get(Setting.contentHideAi, or: false),
+      hideGay: repo.get(Setting.contentHideGay, or: true),
     );
   }
 
@@ -32,6 +33,12 @@ class ContentSettingState extends _$ContentSettingState {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(hideAi: value);
     await repo.put(Setting.contentHideAi, value);
+  }
+
+  Future<void> setHideGay(bool value) async {
+    final repo = ref.read(settingsRepoProvider);
+    state = state.copyWith(hideGay: value);
+    await repo.put(Setting.contentHideGay, value);
   }
 
   Future<void> setNsfw(bool value) async {

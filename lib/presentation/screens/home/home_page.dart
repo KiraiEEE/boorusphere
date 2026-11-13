@@ -190,6 +190,13 @@ class _SlidableContainer extends HookConsumerWidget {
       drawer.setAnimator(animator);
     }, [drawer]);
 
+    // built once and reused on every animation frame, so sliding only moves
+    // a layer instead of rebuilding and repainting the drawer contents
+    final drawerView = useMemoized(
+      () => RepaintBoundary(child: HomeDrawer(maxWidth: maxDrawerWidth)),
+      [maxDrawerWidth],
+    );
+
     return GestureDetector(
       onHorizontalDragStart: (details) {
         final dragWidth = edgeDragWidth ?? context.mediaQuery.size.width / 2;
@@ -236,54 +243,42 @@ class _SlidableContainer extends HookConsumerWidget {
         ),
         builder: (context, child) {
           final slide = maxDrawerWidth * tween.value;
+          // the drawer slides over the timeline as frosted glass, the
+          // timeline only drifts a little so there's something to blur
           return Stack(
             children: [
-              Transform(
-                transform: Matrix4.identity()
-                  ..setTranslationRaw(
-                    (1 - tween.value) * (maxDrawerWidth / 2),
-                    0,
-                    0,
-                  )
-                  ..translateByDouble(slide - maxDrawerWidth, 0, 0, 1),
-                alignment: Alignment.centerLeft,
-                child: HomeDrawer(maxWidth: maxDrawerWidth),
-              ),
               Transform.translate(
-                offset: Offset(slide, 0),
+                offset: Offset(slide * 0.12, 0),
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: animator.isCompleted ? drawer.close : null,
                   child: IgnorePointer(
                     ignoring: animator.isCompleted,
                     // keep the tree stable so the timeline never remounts
-                    child: ClipRRect(
-                      clipBehavior: tween.value == 0
-                          ? Clip.none
-                          : Clip.antiAlias,
-                      borderRadius: BorderRadius.horizontal(
-                        left: Radius.circular(28 * tween.value),
-                      ),
-                      child: Stack(
-                        fit: StackFit.passthrough,
-                        children: [
-                          child!,
-                          if (tween.value > 0)
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: ColoredBox(
-                                  color: Colors.black.withValues(
-                                    alpha: 0.18 * tween.value,
-                                  ),
+                    child: Stack(
+                      fit: StackFit.passthrough,
+                      children: [
+                        child!,
+                        if (tween.value > 0)
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: ColoredBox(
+                                color: Colors.black.withValues(
+                                  alpha: 0.25 * tween.value,
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
               ),
+              if (tween.value > 0)
+                Transform.translate(
+                  offset: Offset(slide - maxDrawerWidth, 0),
+                  child: drawerView,
+                ),
             ],
           );
         },

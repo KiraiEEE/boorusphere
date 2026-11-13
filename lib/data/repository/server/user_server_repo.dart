@@ -74,9 +74,26 @@ class UserServerRepo implements ServerRepo {
     if (updates.isNotEmpty) await box.putAll(updates);
   }
 
+  /// Presets dropped from the bundled list, removed from existing installs
+  /// once so they can still be re-added by hand afterwards.
+  static const _retired = {
+    '@e621',
+    '@e926',
+    '@furbooru',
+    '@derpibooru',
+    '@tbib',
+  };
+
+  Future<void> _removeRetired() async {
+    if (_meta.get('retired_v2', defaultValue: false) == true) return;
+    await box.deleteAll(_retired.where(box.containsKey));
+    await _meta.put('retired_v2', true);
+  }
+
   @override
   Future<void> populate() async {
     if (_defaults.isEmpty) return;
+    await _removeRetired();
 
     final seen = Set<String>.from(_meta.get('presets', defaultValue: []));
     if (box.isEmpty) {

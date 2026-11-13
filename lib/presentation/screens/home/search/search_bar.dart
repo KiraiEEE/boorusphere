@@ -1,9 +1,7 @@
 import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
-import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
-import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_controller.dart';
@@ -27,9 +25,6 @@ class HomeSearchBar extends HookConsumerWidget {
     final searchBar = ref.watch(searchBarControllerProvider);
     final delta = useState([0.0, 0.0]);
     final collapsed = !searchBar.isOpen && delta.value.first > 0;
-    final isBlurAllowed = ref.watch(
-      uiSettingStateProvider.select((ui) => ui.blur),
-    );
     final onScrolling = useCallback(() {
       final position = scrollController.position;
       final threshold = innerHeight;
@@ -70,20 +65,15 @@ class HomeSearchBar extends HookConsumerWidget {
     });
 
     return RepaintBoundary(
+      // one flat frosted bar, always blurred
       child: BlurBackdrop(
-        sigmaX: 8,
-        sigmaY: 8,
-        blur: isBlurAllowed,
+        sigmaX: 16,
+        sigmaY: 16,
+        blur: true,
         child: Container(
           decoration: BoxDecoration(
             color: context.theme.scaffoldBackgroundColor.withValues(
-              alpha: context.isLightThemed
-                  ? isBlurAllowed
-                        ? 0.7
-                        : 0.92
-                  : isBlurAllowed
-                  ? 0.85
-                  : 0.97,
+              alpha: context.isLightThemed ? 0.7 : 0.75,
             ),
             border: Border(
               top: BorderSide(color: context.colorScheme.outlineVariant),
@@ -98,10 +88,6 @@ class HomeSearchBar extends HookConsumerWidget {
                 if (searchBar.isOpen) const _OptionBar(),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: collapsed ? 0 : 0.2),
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                  ),
                   margin: collapsed
                       ? const EdgeInsets.fromLTRB(32, 4, 32, 0)
                       : const EdgeInsets.fromLTRB(16, 11, 16, 11),
@@ -112,7 +98,11 @@ class HomeSearchBar extends HookConsumerWidget {
                         children: [
                           _LeadingButton(collapsed: collapsed),
                           if (!searchBar.isOpen)
-                            Positioned(right: 8, child: _RatingIndicator()),
+                            Positioned(
+                              right: 9,
+                              top: 5,
+                              child: _NsfwIndicator(),
+                            ),
                         ],
                       ),
                       const Expanded(child: _SearchField()),
@@ -163,8 +153,14 @@ class _SearchField extends HookConsumerWidget {
       canRequestFocus: searchBar.isOpen,
       enableIMEPersonalizedLearning: !imeIncognito,
       controller: searchBar.textEditingController,
+      // the bar itself is the surface: no fill or outline from the app theme
       decoration: InputDecoration(
+        filled: false,
         border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
         hintText: searchBar.value.isEmpty
             ? context.t.searchHint(serverName: server.name)
             : searchBar.value,
@@ -204,112 +200,61 @@ class _OptionBar extends ConsumerWidget {
       SearchSort.random => Icons.shuffle_rounded,
     };
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 11, 16, 0),
-      child: Row(
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: nsfw
-                ? const _RatingButton()
-                : ActionChip(
-                    avatar: const Icon(Icons.shield_rounded, size: 16),
-                    label: Text(context.t.settings.safeMode),
-                    onPressed: () => setNsfwEnabled(context, ref, true),
-                  ),
-          ),
-          if (sorts.length > 1) ...[
-            Container(
-              width: 1,
-              height: 20,
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              color: context.colorScheme.outlineVariant,
-            ),
-            for (final it in sorts)
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: ChoiceChip(
-                  avatar: Icon(sortIcon(it), size: 16),
-                  label: Text(sortLabel(it)),
-                  selected: sort == it,
-                  showCheckmark: false,
-                  onSelected: (_) =>
-                      ref.read(serverSettingStateProvider.notifier).setSort(it),
-                ),
+    // borderless chips so the options sit flat on the frosted bar
+    final flatChips = context.theme.chipTheme.copyWith(
+      side: BorderSide.none,
+      backgroundColor: Colors.transparent,
+      selectedColor: context.colorScheme.secondaryContainer.withValues(
+        alpha: 0.7,
+      ),
+      shape: const StadiumBorder(),
+    );
+
+    return ChipTheme(
+      data: flatChips,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+        child: Row(
+          children: [
+            FilterChip(
+              avatar: Icon(
+                nsfw
+                    ? Icons.local_fire_department_rounded
+                    : Icons.local_fire_department_outlined,
+                size: 16,
+                color: nsfw ? context.colorScheme.error : null,
               ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _RatingButton extends ConsumerWidget {
-  const _RatingButton();
-
-  String rateDesc(BuildContext context, BooruRating rating) {
-    final desc = rating.describe(context);
-    return desc.isEmpty ? context.t.rating.all : desc;
-  }
-
-  Future<BooruRating?> selectRating(BuildContext context, BooruRating current) {
-    return showDialog<BooruRating>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(context.t.rating.title),
-          icon: const Icon(Icons.star),
-          contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
-          content: RadioGroup<BooruRating>(
-            groupValue: current,
-            onChanged: (x) => context.navigator.pop(x),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: BooruRating.values
-                  .map(
-                    (e) => RadioListTile(
-                      value: e,
-                      title: Text(rateDesc(context, e)),
-                    ),
-                  )
-                  .toList(),
+              label: Text(
+                '${context.t.nsfw.short}: ${nsfw ? context.t.nsfw.shortOn : context.t.nsfw.shortOff}',
+              ),
+              selected: nsfw,
+              showCheckmark: false,
+              onSelected: (it) => setNsfwEnabled(context, ref, it),
             ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rating = ref.watch(
-      serverSettingStateProvider.select((it) => it.searchRating),
-    );
-    final label = '${context.t.rating.title}: ${rateDesc(context, rating)}';
-
-    return TextButton(
-      onPressed: () async {
-        final selected = await selectRating(context, rating);
-        if (selected != null) {
-          await ref
-              .read(serverSettingStateProvider.notifier)
-              .setRating(selected);
-        }
-      },
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-        minimumSize: const Size(1, 1),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        side: BorderSide(
-          width: 1,
-          color: context.colorScheme.surfaceContainerHighest,
+            if (sorts.length > 1) ...[
+              Container(
+                width: 1,
+                height: 20,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                color: context.colorScheme.outlineVariant,
+              ),
+              for (final it in sorts)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: ChoiceChip(
+                    avatar: Icon(sortIcon(it), size: 16),
+                    label: Text(sortLabel(it)),
+                    selected: sort == it,
+                    showCheckmark: false,
+                    onSelected: (_) => ref
+                        .read(serverSettingStateProvider.notifier)
+                        .setSort(it),
+                  ),
+                ),
+            ],
+          ],
         ),
-        elevation: 0,
-      ),
-      child: Text(
-        label.toLowerCase(),
-        style: TextStyle(color: context.colorScheme.onSurface),
       ),
     );
   }
@@ -326,6 +271,7 @@ class _Button extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      customBorder: const StadiumBorder(),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
         child: AnimatedScale(
@@ -371,6 +317,8 @@ class _LeadingButton extends ConsumerWidget {
         },
         child: searchBar.isOpen
             ? const Icon(Icons.arrow_back_rounded)
+            : server.isAll
+            ? const Icon(Icons.all_inclusive_rounded, size: 18)
             : Favicon(
                 key: ValueKey(server.homepage),
                 url: server.homepage,
@@ -381,48 +329,18 @@ class _LeadingButton extends ConsumerWidget {
   }
 }
 
-class _RatingIndicator extends ConsumerWidget {
+/// A small red dot on the server icon while NSFW is on, nothing in safe mode.
+class _NsfwIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rating = ref.watch(effectiveRatingProvider);
-
-    String letter = 's';
-    switch (rating) {
-      case BooruRating.questionable:
-        letter = 'q';
-        break;
-      case BooruRating.sensitive:
-        letter = 'v';
-        break;
-      case BooruRating.explicit:
-        letter = 'e';
-        break;
-      default:
-        break;
-    }
-    Color color = Colors.green.shade800;
-    switch (rating) {
-      case BooruRating.questionable:
-        color = Colors.grey.shade800;
-        break;
-      case BooruRating.sensitive:
-        color = Colors.yellow.shade900;
-        break;
-      case BooruRating.explicit:
-        color = Colors.red.shade800;
-        break;
-      default:
-        break;
-    }
-    return Visibility(
-      visible: rating != BooruRating.all,
-      child: Container(
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        padding: const EdgeInsets.all(4),
-        child: Text(
-          letter,
-          style: const TextStyle(fontSize: 10, color: Colors.white),
-        ),
+    final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
+    if (!nsfw) return const SizedBox.shrink();
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: context.colorScheme.error,
+        shape: BoxShape.circle,
       ),
     );
   }

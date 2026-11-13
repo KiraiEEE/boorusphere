@@ -1,9 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
-import 'package:boorusphere/presentation/routes/app_router.gr.dart';
-import 'package:boorusphere/presentation/screens/home/search_session.dart';
+import 'package:boorusphere/presentation/screens/post/pull_up_details.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
@@ -60,9 +58,8 @@ class PostDetailsButton extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.info),
-      onPressed: () => context.router.push(
-        PostDetailsRoute(post: post, session: ref.read(searchSessionProvider)),
-      ),
+      // same slide-up page as swiping up on the post
+      onPressed: () => PullUpToDetails.open(context, post),
     );
   }
 }

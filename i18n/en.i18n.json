@@ -171,6 +171,7 @@
   },
   "servers": {
     "title": "Server",
+    "all_servers": "All servers",
     "reset_warning": "Are you sure you want to reset server list to default ?\n\nThis will erase all of your added server",
     "remove_last_error": "The last server cannot be removed",
     "preset": "From Preset",
@@ -253,6 +254,10 @@
       "done": "Cache cleared"
     },
     "content": "Content",
+    "hide_gay": {
+      "title": "Hide gay content",
+      "desc": "Hide posts tagged yaoi, bara, male/male and similar"
+    },
     "hide_ai": {
       "title": "Hide AI-generated content",
       "desc": "Hide posts tagged as AI art and AI-only servers"
@@ -282,8 +287,11 @@
   },
   "nsfw": {
     "title": "NSFW content",
-    "on": "Showing every rating",
-    "off": "Safe mode, only safe posts",
+    "on": "On, showing everything: all ratings, adult servers and wallpapers",
+    "off": "Off, safe posts only",
+    "short": "NSFW",
+    "short_on": "On",
+    "short_off": "Off",
     "confirm_title": "Show NSFW content?",
     "confirm_desc": "Boorusphere will show adult content from servers that host it. Only continue if you are 18 or older and viewing it is legal where you live.",
     "confirm": "I'm 18 or older",

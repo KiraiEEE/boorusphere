@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/booru_error.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
@@ -9,8 +7,6 @@ import 'package:boorusphere/presentation/provider/booru/entity/page_data.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
-import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
-import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -163,9 +159,6 @@ class _ErrorStatus extends ConsumerWidget {
       );
     }
 
-    final rating = ref.watch(
-      serverSettingStateProvider.select((it) => it.searchRating),
-    );
     final canWidenRating = error == BooruError.empty && data.posts.isEmpty;
 
     return Center(
@@ -188,18 +181,6 @@ class _ErrorStatus extends ConsumerWidget {
                   OutlinedButton(
                     onPressed: () => setNsfwEnabled(context, ref, true),
                     child: Text(context.t.nsfw.enable),
-                  )
-                else if (canWidenRating && rating != BooruRating.all)
-                  OutlinedButton(
-                    onPressed: () async {
-                      await ref
-                          .read(serverSettingStateProvider.notifier)
-                          .setRating(BooruRating.all);
-                      if (context.mounted) unawaited(retry());
-                    },
-                    child: Text(
-                      '${context.t.rating.title}: ${context.t.rating.all}',
-                    ),
                   ),
                 FilledButton.tonal(
                   onPressed: retry,

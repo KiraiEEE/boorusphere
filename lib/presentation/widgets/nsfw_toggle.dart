@@ -1,7 +1,5 @@
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
-import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
-import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,12 +37,6 @@ Future<bool> setNsfwEnabled(
   }
 
   await HapticFeedback.lightImpact();
-  // turning NSFW on means "show everything" unless a rating was picked
-  final serverSetting = ref.read(serverSettingStateProvider.notifier);
-  if (enable &&
-      ref.read(serverSettingStateProvider).searchRating == BooruRating.safe) {
-    await serverSetting.setRating(BooruRating.all);
-  }
   await notifier.setNsfw(enable);
   return enable;
 }

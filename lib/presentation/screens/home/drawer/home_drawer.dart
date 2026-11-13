@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
@@ -19,14 +20,22 @@ class HomeDrawer extends StatelessWidget {
 
   final double maxWidth;
 
+  static const _radius = BorderRadius.only(
+    topRight: Radius.circular(25),
+    bottomRight: Radius.circular(25),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final background =
+        context.theme.drawerTheme.backgroundColor ??
+        context.colorScheme.surfaceContainerLow;
+    // Solid surface on purpose: a live blur has to re-sample the whole
+    // timeline on every frame of the slide, which stutters on most phones.
     return Material(
-      color: context.theme.drawerTheme.backgroundColor,
-      borderRadius: const BorderRadius.only(
-        topRight: Radius.circular(25),
-        bottomRight: Radius.circular(25),
-      ),
+      color: background,
+      borderRadius: _radius,
+      clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -252,9 +261,10 @@ class _ServerSelection extends ConsumerWidget {
     final hideAi = ref.watch(
       contentSettingStateProvider.select((it) => it.hideAi),
     );
-    final servers = allServers.where(
-      (it) => (nsfw || !it.nsfw) && !(hideAi && it.ai),
-    );
+    final servers = [
+      if (allServers.length > 1) Server.allServers,
+      ...allServers.where((it) => (nsfw || !it.nsfw) && !(hideAi && it.ai)),
+    ];
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 260),
@@ -267,7 +277,7 @@ class _ServerSelection extends ConsumerWidget {
           return Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
             child: ListTile(
-              title: Text(it.name),
+              title: Text(it.isAll ? context.t.servers.allServers : it.name),
               trailing: it.nsfw
                   ? Text(
                       context.t.nsfw.badge,
@@ -277,11 +287,13 @@ class _ServerSelection extends ConsumerWidget {
                       ),
                     )
                   : null,
-              leading: Favicon(
-                url: it.homepage,
-                shape: BoxShape.circle,
-                iconSize: 21,
-              ),
+              leading: it.isAll
+                  ? const Icon(Icons.all_inclusive_rounded, size: 21)
+                  : Favicon(
+                      url: it.homepage,
+                      shape: BoxShape.circle,
+                      iconSize: 21,
+                    ),
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(30),

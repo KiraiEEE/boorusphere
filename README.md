@@ -37,13 +37,11 @@
 
 | Server | Engine | Notes |
 | --- | --- | --- |
-| Safebooru, TBIB | Gelbooru 0.2 | |
+| Safebooru | Gelbooru 0.2 | |
 | Danbooru, AIBooru | Danbooru | Anonymous users can search up to 2 tags (4 on AIBooru); extra tags are filtered on the device |
 | Konachan, Yande.re, Sakugabooru | Moebooru | |
 | Wallhaven | Wallhaven | High resolution wallpapers |
-| e926 | e621 | |
-| Derpibooru, Furbooru | Booru-on-Rails | |
-| Konachan.com, e621, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
+| Konachan.com, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
 | Rule34 (paheal) | Shimmie | Adult only |
 
 Any other compatible site can be added from **Servers > Add new server**; the app detects its API automatically.
