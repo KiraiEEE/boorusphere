@@ -103,6 +103,24 @@ class AboutPage extends ConsumerWidget {
               ),
               const Divider(height: 32),
               ListTile(
+                leading: const Icon(Icons.person_outline_rounded),
+                title: Text(context.t.credits.developer),
+                subtitle: const Text('KiraiEEE'),
+                onTap: () => launchUrlString(
+                  'https://github.com/KiraiEEE',
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.call_split_rounded),
+                title: Text(context.t.credits.forkedFrom),
+                subtitle: const Text('nullxception/boorusphere'),
+                onTap: () => launchUrlString(
+                  'https://github.com/nullxception/boorusphere',
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              ListTile(
                 title: Text(context.t.changelog.title),
                 leading: const Icon(Icons.list_alt_rounded),
                 onTap: () {

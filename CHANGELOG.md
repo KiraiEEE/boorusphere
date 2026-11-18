@@ -1,3 +1,11 @@
+## 2.0.2
+
+* New servers: Zerochan, Nekosia, nekos.best (anime reaction GIFs), MSPABooru and Redgifs (adult GIFs and clips, hidden while NSFW is off)
+* Find the source: reverse image search on SauceNAO, IQDB, ascii2d, trace.moe, Google Lens, Yandex, Bing and TinEye, plus the artist's name on X
+* Tag suggestions for nekos.best reactions and Nekosia tags
+* Zerochan downloads fetch the real full size file
+* About page credits the developer and the original project
+
 ## 2.0.1
 
 * One NSFW switch replaces safe mode and the rating picker, in Settings and right in the search bar

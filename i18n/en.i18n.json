@@ -14,6 +14,10 @@
   "load_more": "Load more",
   "clearing": "Clearing...",
   "details": "Details",
+  "credits": {
+    "developer": "Developed by",
+    "forked_from": "Forked from the original by nullxception"
+  },
   "reverse_search": {
     "title": "Find the source",
     "boorus": "Finds the original post on boorus, Pixiv and X",

@@ -16,15 +16,28 @@
     </div>
 </div>
 
-> This is a maintained continuation of [nullxception/boorusphere](https://github.com/nullxception/boorusphere), which was archived in July 2024.
+> Developed by [KiraiEEE](https://github.com/KiraiEEE). A maintained continuation of the original [nullxception/boorusphere](https://github.com/nullxception/boorusphere), which was archived in July 2024.
+
+# What's new in 2.0.2
+
+- **More servers**: Zerochan, Nekosia, nekos.best (anime reaction GIFs), MSPABooru and Redgifs (adult GIFs)
+- **Find the source**: reverse image search on SauceNAO, IQDB, ascii2d, trace.moe, Google Lens, Yandex, Bing and TinEye, plus the artist on X
+- **Swipe up** on a post to pull up its details and tags
+- **One NSFW switch** replaces safe mode and the rating picker
+- **Downloads fixed**: saving twice, Retry, stuck "downloading" entries and files missing from the gallery
+- Flat search bar, faster solid drawer, simpler tag list, app stays in portrait
+- About page credits the developer and the original project
 
 # Features
 
-- Clean Material 3 interface with frosted glass surfaces
+- Clean Material 3 interface
 - Android (10+) and Windows
-- Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites
+- Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites, plus Zerochan, Wallhaven, Redgifs and anime image APIs
 - Plays videos and animated images (GIF, WEBM, MP4)
-- One-tap NSFW switch; safe mode filters on the server and on the device
+- "All servers" feed that searches every server at once
+- One-tap NSFW switch; with it off, only safe posts are shown, filtered on the server and on the device
+- Reverse image search to find where a picture comes from
+- Swipe up on a post for its details and tags
 - Hide AI-generated content with one switch
 - Latest / Popular / Random sorting
 - Blacklist with wildcards, tag combos, exclusions and rating/score rules
@@ -37,12 +50,16 @@
 
 | Server | Engine | Notes |
 | --- | --- | --- |
-| Safebooru | Gelbooru 0.2 | |
+| Safebooru, MSPABooru | Gelbooru 0.2 | |
 | Danbooru, AIBooru | Danbooru | Anonymous users can search up to 2 tags (4 on AIBooru); extra tags are filtered on the device |
 | Konachan, Yande.re, Sakugabooru | Moebooru | |
+| Zerochan | Zerochan | Anime art; tags are titles like `hatsune miku` |
 | Wallhaven | Wallhaven | High resolution wallpapers |
+| nekos.best | nekos.best | Anime reaction GIFs: search a reaction (`hug`, `pat`, `dance`…) or an anime title |
+| Nekosia | Nekosia | Tagged anime art in random batches |
 | Konachan.com, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
 | Rule34 (paheal) | Shimmie | Adult only |
+| Redgifs | Redgifs | Adult GIFs and clips, hidden while NSFW is off |
 
 Any other compatible site can be added from **Servers > Add new server**; the app detects its API automatically.
 
