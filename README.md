@@ -16,8 +16,6 @@
     </div>
 </div>
 
-> Developed by [KiraiEEE](https://github.com/KiraiEEE). A maintained continuation of the original [nullxception/boorusphere](https://github.com/nullxception/boorusphere), which was archived in July 2024.
-
 # What's new in 2.0.2
 
 - **More servers**: Zerochan, Nekosia, nekos.best (anime reaction GIFs), MSPABooru and Redgifs (adult GIFs)
