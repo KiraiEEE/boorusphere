@@ -11,9 +11,12 @@ import 'package:boorusphere/data/repository/booru/parser/e621_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/gelbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/moebooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nekosia_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/redgifs_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/safebooru_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/shimmie_xml_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/wallhaven_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/zerochan_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:dio/dio.dart';
@@ -28,9 +31,12 @@ void main() {
     GelbooruJsonParser(),
     MoebooruJsonParser(),
     NekosBestJsonParser(),
+    NekosiaJsonParser(),
+    RedgifsJsonParser(),
     SafebooruXmlParser(),
     ShimmieXmlParser(),
     WallhavenJsonParser(),
+    ZerochanJsonParser(),
   ];
   final dio = Dio(
     BaseOptions(
@@ -60,7 +66,15 @@ void main() {
         ),
         page: 0,
       );
-      final res = await dio.get(url);
+      final parser = parserOf(server.searchParserId);
+      // same per-parser handling as the app: tokens, odd statuses, raw text
+      final res = await dio.get(
+        url,
+        options: Options(
+          headers: await parser.headersFor(dio),
+          responseType: parser.responseType,
+        ),
+      );
       if (res.statusCode == 401 ||
           '${res.data}'.contains('Missing authentication')) {
         markTestSkipped('${server.name} requires credentials');
@@ -70,7 +84,6 @@ void main() {
         markTestSkipped('${server.name} is down (503)');
         return;
       }
-      final parser = parserOf(server.searchParserId);
       expect(parser.canParsePage(res), true, reason: url);
       final posts = parser.parsePage(server, res);
       expect(posts, isNotEmpty, reason: url);

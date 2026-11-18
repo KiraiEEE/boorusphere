@@ -1,6 +1,9 @@
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nekosia_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/redgifs_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/zerochan_json_parser.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -54,9 +57,26 @@ abstract class Server with _$Server {
     return first.isEmpty || NekosBestJsonParser.categories.contains(first);
   }
 
+  /// APIs that aren't boorus build their own search urls
+  static const _customApis = {
+    'NekosBest.json',
+    'Zerochan.json',
+    'Nekosia.json',
+    'Redgifs.json',
+  };
+
+  bool get _isCustomApi => _customApis.contains(searchParserId);
+
+  /// Sorting supported by the custom APIs, besides [SearchSort.latest]
+  Set<SearchSort> get _customSorts => switch (searchParserId) {
+    'Zerochan.json' => {SearchSort.popular},
+    'Redgifs.json' => {SearchSort.popular, SearchSort.random},
+    _ => const {},
+  };
+
   RatingDialect get ratingDialect {
-    if (searchParserId == 'Wallhaven.json' || isNekosBest) {
-      // rating is filtered with the "purity" parameter instead
+    if (searchParserId == 'Wallhaven.json' || _isCustomApi) {
+      // rating is a url parameter, or the site has one rating only
       return RatingDialect.none;
     } else if (searchUrl.toUri().queryParameters.containsKey('offset')) {
       return RatingDialect.szurubooru;
@@ -74,9 +94,31 @@ abstract class Server with _$Server {
   }
 
   String searchUrlOf(PageOption option, {required int page}) {
-    if (isNekosBest) {
-      return NekosBestJsonParser.searchUrlOf(apiAddress, option.query, page);
-    }
+    final custom = switch (searchParserId) {
+      'NekosBest.json' => NekosBestJsonParser.searchUrlOf(
+        apiAddress,
+        option.query,
+        page,
+      ),
+      'Zerochan.json' => ZerochanJsonParser.searchUrlOf(
+        apiAddress,
+        option.query,
+        page,
+        option.limit,
+        option.sort,
+      ),
+      'Nekosia.json' => NekosiaJsonParser.searchUrlOf(apiAddress, option.query),
+      'Redgifs.json' => RedgifsJsonParser.searchUrlOf(
+        apiAddress,
+        option.query,
+        page,
+        option.limit,
+        option.sort,
+      ),
+      _ => null,
+    };
+    if (custom != null) return custom;
+
     final query = option.query.trim();
     var tags = query.isEmpty ? Server.defaultTag : query;
     final rate = ratingDialect.tagOf(option.searchRating);
@@ -159,6 +201,7 @@ abstract class Server with _$Server {
   bool supportsSort(SearchSort sort) =>
       isAll ||
       sort == SearchSort.latest ||
+      _customSorts.contains(sort) ||
       _sortTagOf(sort).isNotEmpty ||
       _sortParamOf(sort).isNotEmpty;
 

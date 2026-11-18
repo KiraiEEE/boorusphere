@@ -3,7 +3,9 @@ import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/screens/post/pull_up_details.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
+import 'package:boorusphere/presentation/widgets/reverse_search.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -40,6 +42,13 @@ class PostToolbox extends HookConsumerWidget {
           PostFavoriteButton(post: post),
           PostDownloadButton(post: post),
           PostOpenLinkButton(post: post),
+          IconButton(
+            padding: const EdgeInsets.all(16),
+            color: Colors.white,
+            tooltip: context.t.reverseSearch.title,
+            icon: const Icon(Icons.image_search_rounded),
+            onPressed: () => ReverseSearchSheet.show(context, post),
+          ),
           PostDetailsButton(post: post),
         ],
       ),

@@ -36,6 +36,15 @@
     "suggestionParserId": "Safebooru.xml"
   },
   {
+    "id": "Zerochan",
+    "homepage": "https://www.zerochan.net",
+    "searchUrl": "{tags}?json&l={post-limit}&p={page-id}",
+    "tagSuggestionUrl": "",
+    "postUrl": "{post-id}",
+    "searchParserId": "Zerochan.json",
+    "suggestionParserId": ""
+  },
+  {
     "id": "Wallhaven",
     "homepage": "https://wallhaven.cc",
     "searchUrl": "api/v1/search?q={tags}&page={page-id}&purity=111&categories=111",
@@ -52,6 +61,25 @@
     "postUrl": "",
     "searchParserId": "NekosBest.json",
     "suggestionParserId": "NekosBest.json"
+  },
+  {
+    "id": "Nekosia",
+    "homepage": "https://nekosia.cat",
+    "apiAddr": "https://api.nekosia.cat",
+    "searchUrl": "api/v1/images/random?count=20&tags={tags}",
+    "tagSuggestionUrl": "api/v1/tags?q={tag-part}",
+    "postUrl": "",
+    "searchParserId": "Nekosia.json",
+    "suggestionParserId": "Nekosia.json"
+  },
+  {
+    "id": "MSPABooru",
+    "homepage": "https://mspabooru.com",
+    "searchUrl": "index.php?page=dapi&s=post&q=index&tags={tags}&pid={page-id}&limit={post-limit}",
+    "tagSuggestionUrl": "index.php?page=dapi&s=tag&q=index&name_pattern=%{tag-part}%&orderby=count&limit={post-limit}",
+    "postUrl": "index.php?page=post&s=view&id={post-id}",
+    "searchParserId": "Safebooru.xml",
+    "suggestionParserId": "Safebooru.xml"
   },
   {
     "id": "Sakugabooru",
@@ -80,6 +108,17 @@
     "postUrl": "post/show/{post-id}",
     "searchParserId": "Moebooru.json",
     "suggestionParserId": "Moebooru.json",
+    "nsfw": true
+  },
+  {
+    "id": "Redgifs",
+    "homepage": "https://www.redgifs.com",
+    "apiAddr": "https://api.redgifs.com",
+    "searchUrl": "v2/gifs/search?search_text={tags}&count={post-limit}&page={page-id}",
+    "tagSuggestionUrl": "",
+    "postUrl": "watch/{post-id}",
+    "searchParserId": "Redgifs.json",
+    "suggestionParserId": "",
     "nsfw": true
   },
   {

@@ -10,6 +10,7 @@ import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
 import 'package:boorusphere/presentation/widgets/glass.dart';
+import 'package:boorusphere/presentation/widgets/reverse_search.dart';
 import 'package:boorusphere/presentation/widgets/styled_overlay_region.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:extended_image/extended_image.dart';
@@ -186,6 +187,11 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                             '${post.originalSize}, ${post.originalFile.fileExt}',
                       ),
                       trailing: _CopyButton(post.originalFile),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.image_search_rounded),
+                      title: Text(context.t.reverseSearch.title),
+                      onTap: () => ReverseSearchSheet.show(context, post),
                     ),
                   ],
                 ),

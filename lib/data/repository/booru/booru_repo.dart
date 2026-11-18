@@ -32,7 +32,11 @@ class BooruRepo implements ImageboardRepo {
     try {
       final res = await client.get(
         url,
-        options: _opt.copyWith(headers: parser.headers),
+        options: _opt.copyWith(
+          headers: await parser.headersFor(client),
+          validateStatus: parser.acceptsStatus,
+          responseType: parser.responseType,
+        ),
       );
       if (_isAuthError(res.data)) throw BooruError.authRequired;
       return res;

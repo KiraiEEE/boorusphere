@@ -1,5 +1,7 @@
 import 'package:boorusphere/data/dio/headers_factory.dart';
+import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/parser/zerochan_json_parser.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_progress.dart';
 import 'package:boorusphere/domain/provider.dart';
@@ -47,7 +49,7 @@ class Downloader {
     String? url,
     String Function(String fileName)? dest,
   }) async {
-    final fileUrl = url ?? post.originalFile;
+    final fileUrl = await _resolve(url ?? post.originalFile, post);
     final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
 
     await sharedStorageHandle.init();
@@ -70,6 +72,21 @@ class Downloader {
       await ref.read(downloadEntryStateProvider.notifier).add(entry);
     }
     return taskId;
+  }
+
+  /// Zerochan lists don't say whether the full file is a png or a jpg, so
+  /// ask the post details for the real address before downloading it.
+  Future<String> _resolve(String url, Post post) async {
+    if (!ZerochanJsonParser.isGuessedOriginal(url)) return url;
+    try {
+      final res = await ref
+          .read(dioProvider)
+          .get(ZerochanJsonParser.detailUrlOf(post.id));
+      final full = res.data is Map ? res.data['full'] : null;
+      return full is String && full.startsWith('http') ? full : url;
+    } catch (e) {
+      return url;
+    }
   }
 
   /// Apply an update from the download engine and index finished files.

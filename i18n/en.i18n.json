@@ -14,6 +14,12 @@
   "load_more": "Load more",
   "clearing": "Clearing...",
   "details": "Details",
+  "reverse_search": {
+    "title": "Find the source",
+    "boorus": "Finds the original post on boorus, Pixiv and X",
+    "anime_scene": "Finds the anime and episode of a screenshot",
+    "artist_on_x": "$artist on X"
+  },
   "location": "Location",
   "source": "Source",
   "file_sample": "Sample file",
