@@ -35,9 +35,13 @@ void main() async {
       const edgeVersion = '9.9.9';
       final adapter = DioAdapterMock(ref.read(dioProvider));
       when(() => adapter.fetch(any(), any(), any())).thenAnswer(
+        // GitHub's latest release
         (invocation) async => ResponseBody.fromString(
-          '\n# comments\nversion: $edgeVersion+99\n',
+          '{"tag_name": "$edgeVersion", "name": "Boorusphere $edgeVersion"}',
           200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
         ),
       );
 

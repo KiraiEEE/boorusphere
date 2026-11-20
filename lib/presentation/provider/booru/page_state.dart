@@ -73,10 +73,6 @@ class PageState extends _$PageState {
       contentSettingStateProvider.select((it) => it.hideAi),
       (_, _) => _refilter(),
     );
-    ref.listen(
-      contentSettingStateProvider.select((it) => it.hideGay),
-      (_, _) => _refilter(),
-    );
     ref.listen(serverSettingStateProvider.select((it) => it.sort), (
       prev,
       next,
@@ -121,6 +117,7 @@ class PageState extends _$PageState {
   static bool isAiGenerated(Post post) =>
       post.allTags.any((it) => _aiTags.contains(it.toLowerCase()));
 
+  /// Always filtered out, there's no switch for it
   static const _gayTags = {
     'yaoi',
     'gay',
@@ -135,6 +132,13 @@ class PageState extends _$PageState {
     'boys_love',
     'shounen_ai',
     'shonen_ai',
+    'shounen-ai',
+    'boy_love',
+    'gay_kiss',
+    'gay_porn',
+    'gay_anal',
+    'bara_(genre)',
+    'yaoi_(genre)',
   };
 
   static bool isGay(Post post) =>
@@ -156,7 +160,7 @@ class PageState extends _$PageState {
           ((servers[it.serverId]?.ai ?? false) || isAiGenerated(it))) {
         return false;
       }
-      if (content.hideGay && isGay(it)) return false;
+      if (isGay(it)) return false;
       return !blacklistOf(it).matches(it);
     });
     final list = List<Post>.unmodifiable(visible);

@@ -2,7 +2,6 @@ import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/nekosia_json_parser.dart';
-import 'package:boorusphere/data/repository/booru/parser/redgifs_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/zerochan_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:dio/dio.dart';
@@ -78,28 +77,6 @@ void main() {
       '&tags=animal-ears%2Cmaid',
     );
     expect(NekosiaJsonParser().id, server.searchParserId);
-  });
-
-  test('Redgifs search url', () {
-    const server = Server(
-      id: 'Redgifs',
-      homepage: 'https://www.redgifs.com',
-      apiAddr: 'https://api.redgifs.com',
-      searchParserId: 'Redgifs.json',
-    );
-    expect(
-      server.searchUrlOf(const PageOption(limit: 40), page: 0),
-      'https://api.redgifs.com/v2/gifs/search?order=trending&count=40&page=1',
-    );
-    expect(
-      server.searchUrlOf(
-        const PageOption(query: 'big_smile', limit: 40),
-        page: 2,
-      ),
-      'https://api.redgifs.com/v2/gifs/search?search_text=big+smile'
-      '&order=latest&count=40&page=3',
-    );
-    expect(RedgifsJsonParser().id, server.searchParserId);
   });
 
   test('ids from text are stable and fit in 48 bits', () {

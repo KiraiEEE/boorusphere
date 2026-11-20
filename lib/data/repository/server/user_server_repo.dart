@@ -82,12 +82,17 @@ class UserServerRepo implements ServerRepo {
     '@furbooru',
     '@derpibooru',
     '@tbib',
+    // porn-first sites, dropped in 2.0.3
+    '@rule34',
+    '@xbooru',
+    '@hypnohub',
+    '@redgifs',
   };
 
   Future<void> _removeRetired() async {
-    if (_meta.get('retired_v2', defaultValue: false) == true) return;
+    if (_meta.get('retired_v3', defaultValue: false) == true) return;
     await box.deleteAll(_retired.where(box.containsKey));
-    await _meta.put('retired_v2', true);
+    await _meta.put('retired_v3', true);
   }
 
   @override

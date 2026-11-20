@@ -35,14 +35,12 @@ class SettingsPage extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: NsfwSwitchCard(),
             ),
+            // NSFW options sit right under the switch, and only while it's on
+            const _BlurContent(),
+            const _BlurTimelineOnly(),
             _Section(
               title: Text(context.t.settings.content),
-              children: const [
-                _HideGay(),
-                _HideAi(),
-                _BlurContent(),
-                _BlurTimelineOnly(),
-              ],
+              children: const [_HideAi()],
             ),
             _Section(
               title: Text(context.t.settings.browsing),
@@ -70,24 +68,6 @@ class SettingsPage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _HideGay extends ConsumerWidget {
-  const _HideGay();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(
-      contentSettingStateProvider.select((it) => it.hideGay),
-    );
-    return SwitchListTile(
-      title: Text(context.t.settings.hideGay.title),
-      subtitle: Text(context.t.settings.hideGay.desc),
-      value: value,
-      onChanged: (it) =>
-          ref.read(contentSettingStateProvider.notifier).setHideGay(it),
     );
   }
 }

@@ -16,22 +16,27 @@
     </div>
 </div>
 
+# What's new in 2.0.3
+
+- **GIF servers**: Danbooru GIFs and Safebooru GIFs for anime and meme GIFs, alongside nekos.best reaction GIFs
+- **Porn-first sites removed** (Rule34, Xbooru, Hypnohub, Redgifs); general boorus like Danbooru stay
+- **Better NSFW mode**: quick 18+ toggle in the sidebar, its blur options grouped right under the switch
+- Gay content is filtered out by default
+- Lighter sidebar: square edge, smoother slide, settings and server editor at the top
+- The update check follows the GitHub releases
+
 # What's new in 2.0.2
 
-- **More servers**: Zerochan, Nekosia, nekos.best (anime reaction GIFs), MSPABooru and Redgifs (adult GIFs)
-- **Find the source**: reverse image search on SauceNAO, IQDB, ascii2d, trace.moe, Google Lens, Yandex, Bing and TinEye, plus the artist on X
-- **Swipe up** on a post to pull up its details and tags
-- **One NSFW switch** replaces safe mode and the rating picker
-- **Downloads fixed**: saving twice, Retry, stuck "downloading" entries and files missing from the gallery
-- Flat search bar, faster solid drawer, simpler tag list, app stays in portrait
-- About page credits the developer and the original project
+- More servers: Zerochan, Nekosia and nekos.best
+- Find the source: reverse image search on SauceNAO, IQDB, ascii2d, trace.moe, Google Lens, Yandex, Bing and TinEye
+- Swipe up on a post for its details and tags, one NSFW switch, download fixes
 
 # Features
 
 - Clean Material 3 interface
 - Android (10+) and Windows
-- Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites, plus Zerochan, Wallhaven, Redgifs and anime image APIs
-- Plays videos and animated images (GIF, WEBM, MP4)
+- Works with Danbooru, Gelbooru, Moebooru, e621, Booru-on-Rails, Shimmie and Szurubooru based sites, plus Zerochan, Wallhaven and anime image and GIF APIs
+- Plays videos and animated images (GIF, WEBM, MP4), with dedicated GIF servers
 - "All servers" feed that searches every server at once
 - One-tap NSFW switch; with it off, only safe posts are shown, filtered on the server and on the device
 - Reverse image search to find where a picture comes from
@@ -54,12 +59,11 @@
 | Zerochan | Zerochan | Anime art; tags are titles like `hatsune miku` |
 | Wallhaven | Wallhaven | High resolution wallpapers |
 | nekos.best | nekos.best | Anime reaction GIFs: search a reaction (`hug`, `pat`, `dance`…) or an anime title |
+| Danbooru GIFs, Safebooru GIFs | Danbooru, Gelbooru 0.2 | Only animated GIFs, searchable by tag |
 | Nekosia | Nekosia | Tagged anime art in random batches |
-| Konachan.com, Xbooru, Hypnohub | various | Adult only, hidden while NSFW is off |
-| Rule34 (paheal) | Shimmie | Adult only |
-| Redgifs | Redgifs | Adult GIFs and clips, hidden while NSFW is off |
+| Konachan.com | Moebooru | Unfiltered Konachan, hidden while NSFW is off |
 
-Any other compatible site can be added from **Servers > Add new server**; the app detects its API automatically.
+Any other compatible site can be added from the pencil next to **All servers** in the sidebar, then **Add new server**; the app detects its API automatically.
 
 # Preview
 

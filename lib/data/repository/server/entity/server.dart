@@ -2,7 +2,6 @@ import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/search_sort.dart';
 import 'package:boorusphere/data/repository/booru/parser/nekosbest_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/nekosia_json_parser.dart';
-import 'package:boorusphere/data/repository/booru/parser/redgifs_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/zerochan_json_parser.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
@@ -62,7 +61,6 @@ abstract class Server with _$Server {
     'NekosBest.json',
     'Zerochan.json',
     'Nekosia.json',
-    'Redgifs.json',
   };
 
   bool get _isCustomApi => _customApis.contains(searchParserId);
@@ -70,7 +68,6 @@ abstract class Server with _$Server {
   /// Sorting supported by the custom APIs, besides [SearchSort.latest]
   Set<SearchSort> get _customSorts => switch (searchParserId) {
     'Zerochan.json' => {SearchSort.popular},
-    'Redgifs.json' => {SearchSort.popular, SearchSort.random},
     _ => const {},
   };
 
@@ -108,13 +105,6 @@ abstract class Server with _$Server {
         option.sort,
       ),
       'Nekosia.json' => NekosiaJsonParser.searchUrlOf(apiAddress, option.query),
-      'Redgifs.json' => RedgifsJsonParser.searchUrlOf(
-        apiAddress,
-        option.query,
-        page,
-        option.limit,
-        option.sort,
-      ),
       _ => null,
     };
     if (custom != null) return custom;

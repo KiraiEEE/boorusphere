@@ -264,10 +264,6 @@
       "done": "Cache cleared"
     },
     "content": "Content",
-    "hide_gay": {
-      "title": "Hide gay content",
-      "desc": "Hide posts tagged yaoi, bara, male/male and similar"
-    },
     "hide_ai": {
       "title": "Hide AI-generated content",
       "desc": "Hide posts tagged as AI art and AI-only servers"
@@ -297,8 +293,8 @@
   },
   "nsfw": {
     "title": "NSFW content",
-    "on": "On, showing everything: all ratings, adult servers and wallpapers",
-    "off": "Off, safe posts only",
+    "on": "On: every rating, including explicit posts",
+    "off": "Off: safe posts only, on every server",
     "short": "NSFW",
     "short_on": "On",
     "short_off": "Off",

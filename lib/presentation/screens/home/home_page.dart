@@ -161,11 +161,13 @@ class _SlidableContainer extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final animator = useAnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 280),
+      reverseDuration: const Duration(milliseconds: 220),
     );
+    // quick start and a long soft landing, closing is a little faster
     final tween = CurvedAnimation(
       parent: animator,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutQuart,
       reverseCurve: Curves.easeInCubic,
     );
     final maxDrawerWidth =
@@ -243,34 +245,31 @@ class _SlidableContainer extends HookConsumerWidget {
         ),
         builder: (context, child) {
           final slide = maxDrawerWidth * tween.value;
-          // the drawer slides over the timeline as frosted glass, the
-          // timeline only drifts a little so there's something to blur
+          // the drawer slides over a still, dimmed timeline
           return Stack(
             children: [
-              Transform.translate(
-                offset: Offset(slide * 0.12, 0),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: animator.isCompleted ? drawer.close : null,
-                  child: IgnorePointer(
-                    ignoring: animator.isCompleted,
-                    // keep the tree stable so the timeline never remounts
-                    child: Stack(
-                      fit: StackFit.passthrough,
-                      children: [
-                        child!,
-                        if (tween.value > 0)
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: ColoredBox(
-                                color: Colors.black.withValues(
-                                  alpha: 0.25 * tween.value,
-                                ),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: animator.isCompleted ? drawer.close : null,
+                child: IgnorePointer(
+                  ignoring: animator.isCompleted,
+                  // keep the tree stable so the timeline never remounts
+                  child: Stack(
+                    fit: StackFit.passthrough,
+                    children: [
+                      // the timeline is cached while the dim fades over it
+                      RepaintBoundary(child: child),
+                      if (tween.value > 0)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: ColoredBox(
+                              color: Colors.black.withValues(
+                                alpha: 0.25 * tween.value,
                               ),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),

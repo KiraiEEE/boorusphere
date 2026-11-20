@@ -12,6 +12,7 @@ import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_control
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
+import 'package:boorusphere/presentation/widgets/nsfw_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -20,11 +21,6 @@ class HomeDrawer extends StatelessWidget {
 
   final double maxWidth;
 
-  static const _radius = BorderRadius.only(
-    topRight: Radius.circular(25),
-    bottomRight: Radius.circular(25),
-  );
-
   @override
   Widget build(BuildContext context) {
     final background =
@@ -32,10 +28,12 @@ class HomeDrawer extends StatelessWidget {
         context.colorScheme.surfaceContainerLow;
     // Solid surface on purpose: a live blur has to re-sample the whole
     // timeline on every frame of the slide, which stutters on most phones.
+    // Square edge with a hairline instead of rounded corners and a shadow.
     return Material(
       color: background,
-      borderRadius: _radius,
-      clipBehavior: Clip.antiAlias,
+      shape: Border(
+        right: BorderSide(color: context.colorScheme.outlineVariant),
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -106,19 +104,9 @@ class _Footer extends ConsumerWidget {
           onTap: () => context.router.push(FavoritesRoute(session: session)),
         ),
         ListTile(
-          title: Text(context.t.servers.title),
-          leading: const Icon(Icons.public),
-          onTap: () => context.router.push(ServerRoute(session: session)),
-        ),
-        ListTile(
           title: Text(context.t.tagsBlocker.title),
           leading: const Icon(Icons.block),
           onTap: () => context.router.push(const TagsBlockerRoute()),
-        ),
-        ListTile(
-          title: Text(context.t.settings.title),
-          leading: const Icon(Icons.settings),
-          onTap: () => context.router.push(const SettingsRoute()),
         ),
         const AppVersionTile(),
       ],
@@ -140,9 +128,38 @@ class _Header extends StatelessWidget {
             'Boorusphere!',
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.w200),
           ),
-          _ThemeSwitcherButton(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _NsfwButton(),
+              _ThemeSwitcherButton(),
+              IconButton(
+                tooltip: context.t.settings.title,
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () => context.router.push(const SettingsRoute()),
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// Quick NSFW switch, red while it's on
+class _NsfwButton extends ConsumerWidget {
+  const _NsfwButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nsfw = ref.watch(contentSettingStateProvider.select((it) => it.nsfw));
+    return IconButton(
+      tooltip: context.t.nsfw.title,
+      isSelected: nsfw,
+      color: nsfw ? context.colorScheme.error : null,
+      icon: const Icon(Icons.eighteen_up_rating_outlined),
+      selectedIcon: const Icon(Icons.eighteen_up_rating),
+      onPressed: () => setNsfwEnabled(context, ref, !nsfw),
     );
   }
 }
@@ -278,7 +295,16 @@ class _ServerSelection extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
             child: ListTile(
               title: Text(it.isAll ? context.t.servers.allServers : it.name),
-              trailing: it.nsfw
+              // the first row ("All servers") carries the server editor
+              trailing: identical(it, servers.first)
+                  ? IconButton(
+                      tooltip: context.t.servers.title,
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: () =>
+                          context.router.push(ServerRoute(session: session)),
+                    )
+                  : it.nsfw
                   ? Text(
                       context.t.nsfw.badge,
                       style: context.theme.textTheme.labelSmall?.copyWith(

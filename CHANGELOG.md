@@ -1,3 +1,12 @@
+## 2.0.3
+
+* GIF servers: Danbooru GIFs and Safebooru GIFs, only animated GIFs and searchable by tag
+* Removed porn-first sites (Rule34, Xbooru, Hypnohub, Redgifs); they're also taken off existing installs once
+* NSFW mode: 18+ toggle in the sidebar, blur options grouped right under the switch, clearer on/off text
+* Gay content is filtered out by default, the switch is gone
+* Sidebar: square edge, lighter and smoother slide; settings next to the theme toggle, server editor (pencil) next to All servers
+* The update check follows the latest GitHub release instead of the main branch
+
 ## 2.0.2
 
 * New servers: Zerochan, Nekosia, nekos.best (anime reaction GIFs), MSPABooru and Redgifs (adult GIFs and clips, hidden while NSFW is off)
